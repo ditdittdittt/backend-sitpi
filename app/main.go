@@ -3,6 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	_auctionHttpDelivery "github.com/ditdittdittt/backend-sitpi/auction/delivery/http"
+	_auctionRepo "github.com/ditdittdittt/backend-sitpi/auction/repository/mysql"
+	_auctionUsecase "github.com/ditdittdittt/backend-sitpi/auction/usecase"
 	_caughtFishHttpDelivery "github.com/ditdittdittt/backend-sitpi/caughtFish/delivery/http"
 	_caughtFishRepo "github.com/ditdittdittt/backend-sitpi/caughtFish/repository/mysql"
 	_caughtFishUsecase "github.com/ditdittdittt/backend-sitpi/caughtFish/usecase"
@@ -66,9 +69,15 @@ func main() {
 	caughtFishUsecase := _caughtFishUsecase.NewCaughtFishUsecase(caughtFishRepo, timeoutContext)
 	_caughtFishHttpDelivery.NewCaughtFishHandler(r, caughtFishUsecase)
 
+
+	auctionRepo := _auctionRepo.NewMysqlAuctionRepository(dbConn)
+	auctionUsecase := _auctionUsecase.NewAuctionUsecase(auctionRepo, timeoutContext)
+	_auctionHttpDelivery.NewAuctionHandler(r, auctionUsecase)
+  
 	fisherRepo := _fisherRepo.NewMysqlFisherRepository(dbConn)
 	fisherUsecase := _fisherUsecase.NewFisherUsecase(fisherRepo, timeoutContext)
 	_fisherHttpDelivery.NewFisherHandler(r, fisherUsecase)
+
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), r)
 }
