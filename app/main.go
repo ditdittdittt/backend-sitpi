@@ -12,6 +12,9 @@ import (
 	_fisherHttpDelivery "github.com/ditdittdittt/backend-sitpi/fisher/delivery/http"
 	_fisherRepo "github.com/ditdittdittt/backend-sitpi/fisher/repository/mysql"
 	_fisherUsecase "github.com/ditdittdittt/backend-sitpi/fisher/usecase"
+	_transactionHttpDelivery "github.com/ditdittdittt/backend-sitpi/transaction/delivery/http"
+	_transactionRepo "github.com/ditdittdittt/backend-sitpi/transaction/repository/mysql"
+	_transactionUsecase "github.com/ditdittdittt/backend-sitpi/transaction/usecase"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
@@ -69,15 +72,17 @@ func main() {
 	caughtFishUsecase := _caughtFishUsecase.NewCaughtFishUsecase(caughtFishRepo, timeoutContext)
 	_caughtFishHttpDelivery.NewCaughtFishHandler(r, caughtFishUsecase)
 
-
 	auctionRepo := _auctionRepo.NewMysqlAuctionRepository(dbConn)
 	auctionUsecase := _auctionUsecase.NewAuctionUsecase(auctionRepo, timeoutContext)
 	_auctionHttpDelivery.NewAuctionHandler(r, auctionUsecase)
-  
+
 	fisherRepo := _fisherRepo.NewMysqlFisherRepository(dbConn)
 	fisherUsecase := _fisherUsecase.NewFisherUsecase(fisherRepo, timeoutContext)
 	_fisherHttpDelivery.NewFisherHandler(r, fisherUsecase)
 
+	transactionRepo := _transactionRepo.NewMysqlTransactionRepository(dbConn)
+	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	_transactionHttpDelivery.NewTransactionHandler(r, transactionUsecase)
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), r)
 }
