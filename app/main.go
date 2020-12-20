@@ -9,6 +9,9 @@ import (
 	_caughtFishHttpDelivery "github.com/ditdittdittt/backend-sitpi/caughtFish/delivery/http"
 	_caughtFishRepo "github.com/ditdittdittt/backend-sitpi/caughtFish/repository/mysql"
 	_caughtFishUsecase "github.com/ditdittdittt/backend-sitpi/caughtFish/usecase"
+	_fisherHttpDelivery "github.com/ditdittdittt/backend-sitpi/fisher/delivery/http"
+	_fisherRepo "github.com/ditdittdittt/backend-sitpi/fisher/repository/mysql"
+	_fisherUsecase "github.com/ditdittdittt/backend-sitpi/fisher/usecase"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
@@ -61,13 +64,20 @@ func main() {
 	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
 
 	r := mux.NewRouter()
+
 	caughtFishRepo := _caughtFishRepo.NewMysqlCaughtFishRepository(dbConn)
 	caughtFishUsecase := _caughtFishUsecase.NewCaughtFishUsecase(caughtFishRepo, timeoutContext)
 	_caughtFishHttpDelivery.NewCaughtFishHandler(r, caughtFishUsecase)
 
+
 	auctionRepo := _auctionRepo.NewMysqlAuctionRepository(dbConn)
 	auctionUsecase := _auctionUsecase.NewAuctionUsecase(auctionRepo, timeoutContext)
 	_auctionHttpDelivery.NewAuctionHandler(r, auctionUsecase)
+  
+	fisherRepo := _fisherRepo.NewMysqlFisherRepository(dbConn)
+	fisherUsecase := _fisherUsecase.NewFisherUsecase(fisherRepo, timeoutContext)
+	_fisherHttpDelivery.NewFisherHandler(r, fisherUsecase)
+
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), r)
 }
