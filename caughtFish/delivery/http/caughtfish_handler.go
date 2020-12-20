@@ -11,10 +11,6 @@ import (
 	"time"
 )
 
-type ResponseError struct {
-	Message string `json:"message"`
-}
-
 type CaughtFishHandler struct {
 	CFUsecase domain.CaughtFishUsecase
 }
