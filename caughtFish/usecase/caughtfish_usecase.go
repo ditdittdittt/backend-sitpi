@@ -11,15 +11,15 @@ type caughtFishUsecase struct {
 	contextTimeout time.Duration
 }
 
-func (c *caughtFishUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.CaughtFish, nextCursor string, err error) {
+func (uc *caughtFishUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.CaughtFish, nextCursor string, err error) {
 	if num == 0 {
 		num = 10
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, nextCursor, err = c.caughtFishRepo.Fetch(ctx, cursor, num)
+	res, nextCursor, err = uc.caughtFishRepo.Fetch(ctx, cursor, num)
 	if err != nil {
 		return nil, "", err
 	}
@@ -27,11 +27,11 @@ func (c *caughtFishUsecase) Fetch(ctx context.Context, cursor string, num int64)
 	return
 }
 
-func (c *caughtFishUsecase) GetByID(ctx context.Context, id int64) (res domain.CaughtFish, err error) {
-	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+func (uc *caughtFishUsecase) GetByID(ctx context.Context, id int64) (res domain.CaughtFish, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, err = c.caughtFishRepo.GetByID(ctx, id)
+	res, err = uc.caughtFishRepo.GetByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -39,28 +39,28 @@ func (c *caughtFishUsecase) GetByID(ctx context.Context, id int64) (res domain.C
 	return
 }
 
-func (c *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
 	cf.UpdatedAt = time.Now()
-	err = c.caughtFishRepo.Update(ctx, cf)
+	err = uc.caughtFishRepo.Update(ctx, cf)
 	return
 }
 
-func (c *caughtFishUsecase) Store(ctx context.Context, cf *domain.CaughtFish) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+func (uc *caughtFishUsecase) Store(ctx context.Context, cf *domain.CaughtFish) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	err = c.caughtFishRepo.Store(ctx, cf)
+	err = uc.caughtFishRepo.Store(ctx, cf)
 	return
 }
 
-func (c *caughtFishUsecase) Delete(ctx context.Context, id int64) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, c.contextTimeout)
+func (uc *caughtFishUsecase) Delete(ctx context.Context, id int64) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	existedCaughtFish, err := c.caughtFishRepo.GetByID(ctx, id)
+	existedCaughtFish, err := uc.caughtFishRepo.GetByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -68,7 +68,7 @@ func (c *caughtFishUsecase) Delete(ctx context.Context, id int64) (err error) {
 		return domain.ErrNotFound
 	}
 
-	err = c.caughtFishRepo.Delete(ctx, id)
+	err = uc.caughtFishRepo.Delete(ctx, id)
 	return
 }
 
