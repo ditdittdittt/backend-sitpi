@@ -9,15 +9,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type mysqlFisherRepository struct {
+type mysqlBuyerRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlFisherRepository(Conn *sql.DB) domain.FisherRepository {
-	return &mysqlFisherRepository{Conn: Conn}
-}
-
-func (m *mysqlFisherRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Fisher, err error) {
+func (m *mysqlBuyerRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Buyer, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -31,13 +27,13 @@ func (m *mysqlFisherRepository) fetch(ctx context.Context, query string, args ..
 		}
 	}()
 
-	result = make([]domain.Fisher, 0)
+	result = make([]domain.Buyer, 0)
 	for rows.Next() {
-		r := domain.Fisher{}
+		r := domain.Buyer{}
 		err = rows.Scan(
 			&r.ID,
-			&r.Name,
 			&r.Nik,
+			&r.Name,
 			&r.Address,
 			&r.CreatedAt,
 			&r.UpdatedAt,
@@ -54,8 +50,8 @@ func (m *mysqlFisherRepository) fetch(ctx context.Context, query string, args ..
 	return result, nil
 }
 
-func (m *mysqlFisherRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Fisher, nextCursor string, err error) {
-	query := `SELECT * FROM fisher WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *mysqlBuyerRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Buyer, nextCursor string, err error) {
+	query := `SELECT * FROM buyer WHERE created_at > ? ORDER BY created_at LIMIT ? `
 
 	decodedCursor, err := helper.DecodeCursor(cursor)
 	if err != nil && cursor != "" {
@@ -74,12 +70,12 @@ func (m *mysqlFisherRepository) Fetch(ctx context.Context, cursor string, num in
 	return
 }
 
-func (m *mysqlFisherRepository) GetByID(ctx context.Context, id int64) (res domain.Fisher, err error) {
-	query := `SELECT * FROM fisher WHERE ID = ?`
+func (m *mysqlBuyerRepository) GetByID(ctx context.Context, id int64) (res domain.Buyer, err error) {
+	query := `SELECT * FROM buyer WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
-		return domain.Fisher{}, err
+		return domain.Buyer{}, err
 	}
 
 	if len(list) > 0 {
@@ -91,15 +87,15 @@ func (m *mysqlFisherRepository) GetByID(ctx context.Context, id int64) (res doma
 	return
 }
 
-func (m *mysqlFisherRepository) Update(ctx context.Context, f *domain.Fisher) (err error) {
-	query := `UPDATE fisher SET nik=?, name=?, address=?, created_at=?, updated_at=? WHERE ID = ?`
+func (m *mysqlBuyerRepository) Update(ctx context.Context, b *domain.Buyer) (err error) {
+	query := `UPDATE buyer SET nik=?, name=?, address=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, f.Nik, f.Name, f.Address, f.CreatedAt, f.UpdatedAt, f.ID)
+	res, err := stmt.ExecContext(ctx, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt, b.ID)
 	if err != nil {
 		return
 	}
@@ -115,14 +111,14 @@ func (m *mysqlFisherRepository) Update(ctx context.Context, f *domain.Fisher) (e
 	return
 }
 
-func (m *mysqlFisherRepository) Store(ctx context.Context, f *domain.Fisher) (err error) {
-	query := `INSERT fisher SET nik=?, name=?, address=?, created_at=?, updated_at=?`
+func (m *mysqlBuyerRepository) Store(ctx context.Context, b *domain.Buyer) (err error) {
+	query := `INSERT buyer SET nik=?, name=?, address=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, f.Nik, f.Name, f.Address, f.CreatedAt, f.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt)
 	if err != nil {
 		return
 	}
@@ -131,12 +127,12 @@ func (m *mysqlFisherRepository) Store(ctx context.Context, f *domain.Fisher) (er
 	if err != nil {
 		return
 	}
-	f.ID = lastID
+	b.ID = lastID
 	return
 }
 
-func (m *mysqlFisherRepository) Delete(ctx context.Context, id int64) (err error) {
-	query := `DELETE FROM fisher WHERE ID = ?`
+func (m *mysqlBuyerRepository) Delete(ctx context.Context, id int64) (err error) {
+	query := `DELETE FROM buyer WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -159,4 +155,8 @@ func (m *mysqlFisherRepository) Delete(ctx context.Context, id int64) (err error
 	}
 
 	return
+}
+
+func NewMysqlBuyerRepository(Conn *sql.DB) domain.BuyerRepository {
+	return &mysqlBuyerRepository{Conn: Conn}
 }

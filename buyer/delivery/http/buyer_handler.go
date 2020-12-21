@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-type FisherHandler struct {
-	FUsecase domain.FisherUsecase
+type BuyerHandler struct {
+	BUsecase domain.BuyerUsecase
 }
 
-type FetchFisherRequest struct {
+type FetchBuyerRequest struct {
 	Cursor string `json:"cursor"`
 	Num    int64  `json:"num"`
 }
@@ -41,17 +41,17 @@ type DeleteRequest struct {
 	ID int64 `json:"id"`
 }
 
-func NewFisherHandler(router *mux.Router, uc domain.FisherUsecase) {
-	handler := &FisherHandler{FUsecase: uc}
-	router.HandleFunc("/fisher/index", handler.FetchFisher).Methods("GET")
-	router.HandleFunc("/fisher/get_by_id", handler.GetByID).Methods("GET")
-	router.HandleFunc("/fisher/store", handler.Store).Methods("POST")
-	router.HandleFunc("/fisher/update", handler.Update).Methods("PUT")
-	router.HandleFunc("/fisher/delete", handler.Delete).Methods("DELETE")
+func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
+	handler := &BuyerHandler{BUsecase: uc}
+	router.HandleFunc("/buyer/index", handler.FetchBuyer).Methods("GET")
+	router.HandleFunc("/buyer/get_by_id", handler.GetByID).Methods("GET")
+	router.HandleFunc("/buyer/store", handler.Store).Methods("POST")
+	router.HandleFunc("/buyer/update", handler.Update).Methods("PUT")
+	router.HandleFunc("/buyer/delete", handler.Delete).Methods("DELETE")
 }
 
-func (h *FisherHandler) FetchFisher(res http.ResponseWriter, req *http.Request) {
-	request := &FetchFisherRequest{}
+func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
+	request := &FetchBuyerRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -73,21 +73,21 @@ func (h *FisherHandler) FetchFisher(res http.ResponseWriter, req *http.Request) 
 	}
 
 	ctx := req.Context()
-	listFisher, _, err := h.FUsecase.Fetch(ctx, request.Cursor, request.Num)
+	listBuyer, _, err := h.BUsecase.Fetch(ctx, request.Cursor, request.Num)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to fetch fisher data"
+		response.Desc = "Failed to fetch buyer data"
 		response.Data = err
 	}
 
 	response.Code = "00"
-	response.Desc = "Success to fetch fisher data"
-	response.Data = listFisher
+	response.Desc = "Success to fetch buyer data"
+	response.Data = listBuyer
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
+func (h *BuyerHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	request := &GetByIDRequest{}
 	response := _response.New()
 
@@ -110,17 +110,16 @@ func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher, err := h.FUsecase.GetByID(ctx, request.ID)
+	buyer, err := h.BUsecase.GetByID(ctx, request.ID)
 
 	response.Code = "00"
-	response.Desc = "Success to get by ID fisher data"
-	response.Data = fisher
+	response.Desc = "Success to get by ID buyer"
+	response.Data = buyer
 
 	helper.SetResponse(res, req, response)
-
 }
 
-func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
+func (h *BuyerHandler) Store(res http.ResponseWriter, req *http.Request) {
 	request := &StoreRequest{}
 	response := _response.New()
 
@@ -143,23 +142,24 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
+	buyer := &domain.Buyer{
 		Nik:       request.Nik,
-		Address:   request.Address,
 		Name:      request.Name,
+		Address:   request.Address,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	err = h.FUsecase.Store(ctx, fisher)
+
+	err = h.BUsecase.Store(ctx, buyer)
 
 	response.Code = "00"
-	response.Desc = "Success to store fisher data"
-	response.Data = fisher
+	response.Desc = "Success to store buyer data"
+	response.Data = buyer
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
+func (h *BuyerHandler) Update(res http.ResponseWriter, req *http.Request) {
 	request := &UpdateRequest{}
 	response := _response.New()
 
@@ -182,23 +182,25 @@ func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
+	buyer := &domain.Buyer{
 		ID:        request.ID,
 		Nik:       request.Nik,
 		Name:      request.Name,
 		Address:   request.Address,
+		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	err = h.FUsecase.Update(ctx, fisher)
+
+	err = h.BUsecase.Update(ctx, buyer)
 
 	response.Code = "00"
-	response.Desc = "Success to update fisher data"
-	response.Data = fisher
+	response.Desc = "Success to update buyer data"
+	response.Data = buyer
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) Delete(res http.ResponseWriter, req *http.Request) {
+func (h *BuyerHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	request := &DeleteRequest{}
 	response := _response.New()
 
@@ -221,10 +223,11 @@ func (h *FisherHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	err = h.FUsecase.Delete(ctx, request.ID)
+
+	err = h.BUsecase.Delete(ctx, request.ID)
 
 	response.Code = "00"
-	response.Desc = "Success to delete fisher data"
+	response.Desc = "Success to delete buyer data"
 
 	helper.SetResponse(res, req, response)
 }

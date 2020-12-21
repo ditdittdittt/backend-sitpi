@@ -6,6 +6,9 @@ import (
 	_auctionHttpDelivery "github.com/ditdittdittt/backend-sitpi/auction/delivery/http"
 	_auctionRepo "github.com/ditdittdittt/backend-sitpi/auction/repository/mysql"
 	_auctionUsecase "github.com/ditdittdittt/backend-sitpi/auction/usecase"
+	_buyerHttpDelivery "github.com/ditdittdittt/backend-sitpi/buyer/delivery/http"
+	_buyerRepo "github.com/ditdittdittt/backend-sitpi/buyer/repository/mysql"
+	_buyerUsecase "github.com/ditdittdittt/backend-sitpi/buyer/usecase"
 	_caughtFishHttpDelivery "github.com/ditdittdittt/backend-sitpi/caughtFish/delivery/http"
 	_caughtFishRepo "github.com/ditdittdittt/backend-sitpi/caughtFish/repository/mysql"
 	_caughtFishUsecase "github.com/ditdittdittt/backend-sitpi/caughtFish/usecase"
@@ -83,6 +86,10 @@ func main() {
 	transactionRepo := _transactionRepo.NewMysqlTransactionRepository(dbConn)
 	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
 	_transactionHttpDelivery.NewTransactionHandler(r, transactionUsecase)
+  
+	buyerRepo := _buyerRepo.NewMysqlBuyerRepository(dbConn)
+	buyerUsecase := _buyerUsecase.NewBuyerUsecase(buyerRepo, timeoutContext)
+	_buyerHttpDelivery.NewBuyerHandler(r, buyerUsecase)
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), r)
 }
