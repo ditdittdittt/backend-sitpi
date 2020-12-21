@@ -8,6 +8,7 @@ import (
 // Fisher type
 type Fisher struct {
 	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
 	Nik       string    `json:"nik"`
 	Address   string    `json:"address"`
 	CreatedAt time.Time `json:"created_at"`
