@@ -26,12 +26,14 @@ type GetByIDRequest struct {
 
 type StoreRequest struct {
 	Nik     string `json:"nik"`
+	Name    string `json:"name"`
 	Address string `json:"address"`
 }
 
 type UpdateRequest struct {
 	ID      int64  `json:"id"`
 	Nik     string `json:"nik"`
+	Name    string `json:"name"`
 	Address string `json:"address"`
 }
 
@@ -144,6 +146,7 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 	fisher := &domain.Fisher{
 		Nik:       request.Nik,
 		Address:   request.Address,
+		Name:      request.Name,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -182,6 +185,7 @@ func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
 	fisher := &domain.Fisher{
 		ID:        request.ID,
 		Nik:       request.Nik,
+		Name:      request.Name,
 		Address:   request.Address,
 		UpdatedAt: time.Now(),
 	}
