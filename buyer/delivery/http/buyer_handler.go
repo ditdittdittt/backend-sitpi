@@ -42,7 +42,12 @@ type DeleteRequest struct {
 }
 
 func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
-
+	handler := &BuyerHandler{BUsecase: uc}
+	router.HandleFunc("/buyer/index", handler.FetchBuyer).Methods("GET")
+	router.HandleFunc("/buyer/get_by_id", handler.GetByID).Methods("GET")
+	router.HandleFunc("/buyer/store", handler.Store).Methods("POST")
+	router.HandleFunc("/buyer/update", handler.Update).Methods("PUT")
+	router.HandleFunc("/buyer/delete", handler.Delete).Methods("DELETE")
 }
 
 func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
