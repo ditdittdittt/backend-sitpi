@@ -30,6 +30,7 @@ type StoreRequest struct {
 	OfficerID        int64  `json:"officer_id"`
 	BuyerID          int64  `json:"buyer_id"`
 	DistributionArea string `json:"distribution_area"`
+	Price            int64  `json:"price"`
 }
 
 type UpdateRequest struct {
@@ -39,6 +40,7 @@ type UpdateRequest struct {
 	OfficerID        int64  `json:"officer_id"`
 	BuyerID          int64  `json:"buyer_id"`
 	DistributionArea string `json:"distribution_area"`
+	Price            int64  `json:"price"`
 }
 
 type DeleteRequest struct {
@@ -152,6 +154,7 @@ func (h *TransactionHandler) Store(res http.ResponseWriter, req *http.Request) {
 		OfficerID:        request.OfficerID,
 		BuyerID:          request.BuyerID,
 		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
 		CreatedAt:        time.Now(),
 		UpdatedAt:        time.Now(),
 	}
@@ -194,6 +197,7 @@ func (h *TransactionHandler) Update(res http.ResponseWriter, req *http.Request) 
 		OfficerID:        request.OfficerID,
 		BuyerID:          request.BuyerID,
 		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
 		UpdatedAt:        time.Now(),
 	}
 

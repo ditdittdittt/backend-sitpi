@@ -37,6 +37,7 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 			&r.OfficerID,
 			&r.BuyerID,
 			&r.DistributionArea,
+			&r.Price,
 			&r.CreatedAt,
 			&r.UpdatedAt,
 		)
@@ -90,14 +91,14 @@ func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res
 }
 
 func (m *mysqlTransactionRepository) Update(ctx context.Context, t *domain.Transaction) (err error) {
-	query := `UPDATE transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.CreatedAt, t.UpdatedAt, t.ID)
+	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt, t.ID)
 	if err != nil {
 		return
 	}
@@ -114,13 +115,13 @@ func (m *mysqlTransactionRepository) Update(ctx context.Context, t *domain.Trans
 }
 
 func (m *mysqlTransactionRepository) Store(ctx context.Context, t *domain.Transaction) (err error) {
-	query := `INSERT transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, created_at=?, updated_at=?`
+	query := `INSERT transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.CreatedAt, t.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return
 	}
