@@ -44,7 +44,6 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 			&r.WeightUnit,
 			&r.FishingGear,
 			&r.FishingArea,
-			&r.Price,
 			&r.Status,
 			&r.CreatedAt,
 			&r.UpdatedAt,
@@ -99,14 +98,14 @@ func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res dom
 }
 
 func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) (err error) {
-	query := `UPDATE auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, price=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Price, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
 	if err != nil {
 		return
 	}
@@ -123,13 +122,13 @@ func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) 
 }
 
 func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (err error) {
-	query := `INSERT auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, price=?, status=?, created_at=?, updated_at=?`
+	query := `INSERT auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Price, a.Status, a.CreatedAt, a.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt)
 	if err != nil {
 		return
 	}
