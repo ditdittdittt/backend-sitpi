@@ -13,6 +13,7 @@ type Transaction struct {
 	OfficerID        int64     `json:"officer_id"`
 	BuyerID          int64     `json:"buyer_id"`
 	DistributionArea string    `json:"distribution_area"`
+	Price            int64     `json:"price"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
 }
