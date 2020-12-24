@@ -164,7 +164,6 @@ func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		Price:       request.Price,
 		Status:      1,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -212,7 +211,6 @@ func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		Price:       request.Price,
 		Status:      request.Status,
 		UpdatedAt:   time.Now(),
 	}
