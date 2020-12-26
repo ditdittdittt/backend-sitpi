@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -44,7 +45,7 @@ type DeleteRequest struct {
 func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
 	handler := &BuyerHandler{BUsecase: uc}
 	router.HandleFunc("/buyer/index", handler.FetchBuyer).Methods("GET")
-	router.HandleFunc("/buyer/get_by_id", handler.GetByID).Methods("GET")
+	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/buyer/store", handler.Store).Methods("POST")
 	router.HandleFunc("/buyer/update", handler.Update).Methods("PUT")
 	router.HandleFunc("/buyer/delete", handler.Delete).Methods("DELETE")
@@ -54,26 +55,12 @@ func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
 	request := &FetchBuyerRequest{}
 	response := _response.New()
 
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
+	params := req.URL.Query()
+	request.Num, _ = strconv.ParseInt(params.Get("num"), 10, 64)
+	request.Cursor = params.Get("cursor")
 
 	ctx := req.Context()
-	listBuyer, _, err := h.BUsecase.Fetch(ctx, request.Cursor, request.Num)
+	listBuyer, cursor, err := h.BUsecase.Fetch(ctx, request.Cursor, request.Num)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch buyer data"
@@ -82,7 +69,10 @@ func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
 
 	response.Code = "00"
 	response.Desc = "Success to fetch buyer data"
-	response.Data = listBuyer
+	response.Data = map[string]interface{}{
+		"buyer_list": listBuyer,
+		"cursor":     cursor,
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -91,30 +81,17 @@ func (h *BuyerHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	request := &GetByIDRequest{}
 	response := _response.New()
 
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
+	params := mux.Vars(req)
+	request.ID, _ = strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	buyer, err := h.BUsecase.GetByID(ctx, request.ID)
+	buyer, _ := h.BUsecase.GetByID(ctx, request.ID)
 
 	response.Code = "00"
 	response.Desc = "Success to get by ID buyer"
-	response.Data = buyer
+	response.Data = map[string]interface{}{
+		"buyer_data": buyer,
+	}
 
 	helper.SetResponse(res, req, response)
 }
