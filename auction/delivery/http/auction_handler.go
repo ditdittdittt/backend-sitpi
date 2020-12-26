@@ -94,7 +94,7 @@ func (h *AuctionHandler) FetchAuction(res http.ResponseWriter, req *http.Request
 	}
 
 	response.Code = "00"
-	response.Desc = "Success to fetch caught fish data"
+	response.Desc = "Success to fetch auction data"
 	response.Data = listAuction
 
 	helper.SetResponse(res, req, response)
@@ -164,7 +164,6 @@ func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		Price:       request.Price,
 		Status:      1,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -212,7 +211,6 @@ func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		Price:       request.Price,
 		Status:      request.Status,
 		UpdatedAt:   time.Now(),
 	}

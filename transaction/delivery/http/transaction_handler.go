@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-type FisherHandler struct {
-	FUsecase domain.FisherUsecase
+type TransactionHandler struct {
+	TUsecase domain.TransactionUsecase
 }
 
-type FetchFisherRequest struct {
+type FetchTransactionRequest struct {
 	Cursor string `json:"cursor"`
 	Num    int64  `json:"num"`
 }
@@ -25,33 +25,39 @@ type GetByIDRequest struct {
 }
 
 type StoreRequest struct {
-	Nik     string `json:"nik"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
+	TpiID            int64  `json:"tpi_id"`
+	AuctionID        int64  `json:"auction_id"`
+	OfficerID        int64  `json:"officer_id"`
+	BuyerID          int64  `json:"buyer_id"`
+	DistributionArea string `json:"distribution_area"`
+	Price            int64  `json:"price"`
 }
 
 type UpdateRequest struct {
-	ID      int64  `json:"id"`
-	Nik     string `json:"nik"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
+	ID               int64  `json:"id"`
+	TpiID            int64  `json:"tpi_id"`
+	AuctionID        int64  `json:"auction_id"`
+	OfficerID        int64  `json:"officer_id"`
+	BuyerID          int64  `json:"buyer_id"`
+	DistributionArea string `json:"distribution_area"`
+	Price            int64  `json:"price"`
 }
 
 type DeleteRequest struct {
 	ID int64 `json:"id"`
 }
 
-func NewFisherHandler(router *mux.Router, uc domain.FisherUsecase) {
-	handler := &FisherHandler{FUsecase: uc}
-	router.HandleFunc("/fisher/index", handler.FetchFisher).Methods("GET")
-	router.HandleFunc("/fisher/get_by_id", handler.GetByID).Methods("GET")
-	router.HandleFunc("/fisher/store", handler.Store).Methods("POST")
-	router.HandleFunc("/fisher/update", handler.Update).Methods("PUT")
-	router.HandleFunc("/fisher/delete", handler.Delete).Methods("DELETE")
+func NewTransactionHandler(router *mux.Router, uc domain.TransactionUsecase) {
+	handler := &TransactionHandler{TUsecase: uc}
+	router.HandleFunc("/transaction/index", handler.FetchTransaction).Methods("GET")
+	router.HandleFunc("/transaction/get_by_id", handler.GetByID).Methods("GET")
+	router.HandleFunc("/transaction/store", handler.Store).Methods("POST")
+	router.HandleFunc("/transaction/update", handler.Update).Methods("PUT")
+	router.HandleFunc("/transaction/delete", handler.Delete).Methods("DELETE")
 }
 
-func (h *FisherHandler) FetchFisher(res http.ResponseWriter, req *http.Request) {
-	request := &FetchFisherRequest{}
+func (h *TransactionHandler) FetchTransaction(res http.ResponseWriter, req *http.Request) {
+	request := &FetchTransactionRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -73,21 +79,21 @@ func (h *FisherHandler) FetchFisher(res http.ResponseWriter, req *http.Request) 
 	}
 
 	ctx := req.Context()
-	listFisher, _, err := h.FUsecase.Fetch(ctx, request.Cursor, request.Num)
+	listTransaction, _, err := h.TUsecase.Fetch(ctx, request.Cursor, request.Num)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to fetch fisher data"
+		response.Desc = "Failed to fetch transaction data"
 		response.Data = err
 	}
 
 	response.Code = "00"
-	response.Desc = "Success to fetch fisher data"
-	response.Data = listFisher
+	response.Desc = "Success to fetch transaction data"
+	response.Data = listTransaction
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
+func (h TransactionHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	request := &GetByIDRequest{}
 	response := _response.New()
 
@@ -110,17 +116,16 @@ func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher, err := h.FUsecase.GetByID(ctx, request.ID)
+	transaction, err := h.TUsecase.GetByID(ctx, request.ID)
 
 	response.Code = "00"
-	response.Desc = "Success to get by ID fisher data"
-	response.Data = fisher
+	response.Desc = "Success to get by ID transaction data"
+	response.Data = transaction
 
 	helper.SetResponse(res, req, response)
-
 }
 
-func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
+func (h *TransactionHandler) Store(res http.ResponseWriter, req *http.Request) {
 	request := &StoreRequest{}
 	response := _response.New()
 
@@ -143,23 +148,27 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
-		Nik:       request.Nik,
-		Address:   request.Address,
-		Name:      request.Name,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+	transaction := &domain.Transaction{
+		TpiID:            request.TpiID,
+		AuctionID:        request.AuctionID,
+		OfficerID:        request.OfficerID,
+		BuyerID:          request.BuyerID,
+		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
 	}
-	err = h.FUsecase.Store(ctx, fisher)
+
+	err = h.TUsecase.Store(ctx, transaction)
 
 	response.Code = "00"
-	response.Desc = "Success to store fisher data"
-	response.Data = fisher
+	response.Desc = "Success to store transaction data"
+	response.Data = transaction
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
+func (h *TransactionHandler) Update(res http.ResponseWriter, req *http.Request) {
 	request := &UpdateRequest{}
 	response := _response.New()
 
@@ -182,23 +191,26 @@ func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
-		ID:        request.ID,
-		Nik:       request.Nik,
-		Name:      request.Name,
-		Address:   request.Address,
-		UpdatedAt: time.Now(),
+	transaction := &domain.Transaction{
+		TpiID:            request.TpiID,
+		AuctionID:        request.AuctionID,
+		OfficerID:        request.OfficerID,
+		BuyerID:          request.BuyerID,
+		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
+		UpdatedAt:        time.Now(),
 	}
-	err = h.FUsecase.Update(ctx, fisher)
+
+	err = h.TUsecase.Update(ctx, transaction)
 
 	response.Code = "00"
-	response.Desc = "Success to update fisher data"
-	response.Data = fisher
+	response.Desc = "Success to update transaction data"
+	response.Data = transaction
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *FisherHandler) Delete(res http.ResponseWriter, req *http.Request) {
+func (h *TransactionHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	request := &DeleteRequest{}
 	response := _response.New()
 
@@ -221,10 +233,10 @@ func (h *FisherHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	err = h.FUsecase.Delete(ctx, request.ID)
+	err = h.TUsecase.Delete(ctx, request.ID)
 
 	response.Code = "00"
-	response.Desc = "Success to delete fisher data"
+	response.Desc = "Success to delete transaction data"
 
 	helper.SetResponse(res, req, response)
 }

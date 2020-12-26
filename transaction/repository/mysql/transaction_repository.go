@@ -9,15 +9,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type mysqlAcutionRepository struct {
+type mysqlTransactionRepository struct {
 	Conn *sql.DB
 }
 
-func NewMysqlAuctionRepository(Conn *sql.DB) domain.AuctionRepository {
-	return &mysqlAcutionRepository{Conn: Conn}
-}
-
-func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Auction, err error) {
+func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Transaction, err error) {
 	rows, err := m.Conn.QueryContext(ctx, query, args...)
 	if err != nil {
 		logrus.Error(err)
@@ -31,20 +27,17 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 		}
 	}()
 
-	result = make([]domain.Auction, 0)
+	result = make([]domain.Transaction, 0)
 	for rows.Next() {
-		r := domain.Auction{}
+		r := domain.Transaction{}
 		err = rows.Scan(
 			&r.ID,
 			&r.TpiID,
-			&r.FisherID,
+			&r.AuctionID,
 			&r.OfficerID,
-			&r.FishTypeID,
-			&r.Weight,
-			&r.WeightUnit,
-			&r.FishingGear,
-			&r.FishingArea,
-			&r.Status,
+			&r.BuyerID,
+			&r.DistributionArea,
+			&r.Price,
 			&r.CreatedAt,
 			&r.UpdatedAt,
 		)
@@ -60,8 +53,8 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 	return result, nil
 }
 
-func (m *mysqlAcutionRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Auction, nextCursor string, err error) {
-	query := `SELECT * FROM auction WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *mysqlTransactionRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Transaction, nextCursor string, err error) {
+	query := `SELECT * FROM transaction WHERE created_at > ? ORDER BY created_at LIMIT ? `
 
 	decodedCursor, err := helper.DecodeCursor(cursor)
 	if err != nil && cursor != "" {
@@ -80,12 +73,12 @@ func (m *mysqlAcutionRepository) Fetch(ctx context.Context, cursor string, num i
 	return
 }
 
-func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res domain.Auction, err error) {
-	query := `SELECT * FROM auction WHERE ID = ?`
+func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res domain.Transaction, err error) {
+	query := `SELECT * FROM transaction WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
-		return domain.Auction{}, err
+		return domain.Transaction{}, err
 	}
 
 	if len(list) > 0 {
@@ -97,15 +90,15 @@ func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res dom
 	return
 }
 
-func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) (err error) {
-	query := `UPDATE auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
+func (m *mysqlTransactionRepository) Update(ctx context.Context, t *domain.Transaction) (err error) {
+	query := `UPDATE transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
+	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt, t.ID)
 	if err != nil {
 		return
 	}
@@ -121,14 +114,14 @@ func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) 
 	return
 }
 
-func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (err error) {
-	query := `INSERT auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=?`
+func (m *mysqlTransactionRepository) Store(ctx context.Context, t *domain.Transaction) (err error) {
+	query := `INSERT transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return
 	}
@@ -137,12 +130,12 @@ func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (
 	if err != nil {
 		return
 	}
-	a.ID = lastID
+	t.ID = lastID
 	return
 }
 
-func (m *mysqlAcutionRepository) Delete(ctx context.Context, id int64) (err error) {
-	query := `DELETE FROM auction WHERE ID = ?`
+func (m *mysqlTransactionRepository) Delete(ctx context.Context, id int64) (err error) {
+	query := `DELETE FROM transaction WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -165,4 +158,8 @@ func (m *mysqlAcutionRepository) Delete(ctx context.Context, id int64) (err erro
 	}
 
 	return
+}
+
+func NewMysqlTransactionRepository(Conn *sql.DB) domain.TransactionRepository {
+	return &mysqlTransactionRepository{Conn: Conn}
 }
