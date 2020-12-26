@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/ditdittdittt/backend-sitpi/domain"
-	"github.com/ditdittdittt/backend-sitpi/helper"
 	"github.com/sirupsen/logrus"
 )
 
@@ -54,21 +53,12 @@ func (m *mysqlFisherRepository) fetch(ctx context.Context, query string, args ..
 	return result, nil
 }
 
-func (m *mysqlFisherRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Fisher, nextCursor string, err error) {
-	query := `SELECT * FROM fisher WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *mysqlFisherRepository) Fetch(ctx context.Context) (res []domain.Fisher, err error) {
+	query := `SELECT * FROM fisher`
 
-	decodedCursor, err := helper.DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", domain.ErrBadParamInput
-	}
-
-	res, err = m.fetch(ctx, query, decodedCursor, num)
+	res, err = m.fetch(ctx, query)
 	if err != nil {
-		return nil, "", err
-	}
-
-	if len(res) == int(num) {
-		nextCursor = helper.EncodeCursor(res[len(res)-1].CreatedAt)
+		return nil, err
 	}
 
 	return

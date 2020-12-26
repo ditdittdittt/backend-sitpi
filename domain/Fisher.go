@@ -16,7 +16,7 @@ type Fisher struct {
 }
 
 type FisherUsecase interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Fisher, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Fisher, err error)
 	GetByID(ctx context.Context, id int64) (res Fisher, err error)
 	Update(ctx context.Context, f *Fisher) (err error)
 	Store(ctx context.Context, f *Fisher) (err error)
@@ -24,7 +24,7 @@ type FisherUsecase interface {
 }
 
 type FisherRepository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Fisher, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Fisher, err error)
 	GetByID(ctx context.Context, id int64) (res Fisher, err error)
 	Update(ctx context.Context, f *Fisher) (err error)
 	Store(ctx context.Context, f *Fisher) (err error)

@@ -11,17 +11,13 @@ type fisherUsecase struct {
 	contextTimeout time.Duration
 }
 
-func (uc *fisherUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Fisher, nextCursor string, err error) {
-	if num == 0 {
-		num = 10
-	}
-
+func (uc *fisherUsecase) Fetch(ctx context.Context) (res []domain.Fisher, err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, nextCursor, err = uc.fisherRepo.Fetch(ctx, cursor, num)
+	res, err = uc.fisherRepo.Fetch(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	return
