@@ -32,8 +32,8 @@ func (m *mysqlBuyerRepository) fetch(ctx context.Context, query string, args ...
 		r := domain.Buyer{}
 		err = rows.Scan(
 			&r.ID,
-			&r.Nik,
 			&r.Name,
+			&r.Nik,
 			&r.Address,
 			&r.CreatedAt,
 			&r.UpdatedAt,
