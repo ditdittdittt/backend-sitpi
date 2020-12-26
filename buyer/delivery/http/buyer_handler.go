@@ -52,15 +52,15 @@ func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
 }
 
 func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
-	request := &FetchBuyerRequest{}
+	//request := &FetchBuyerRequest{}
 	response := _response.New()
 
-	params := req.URL.Query()
-	request.Num, _ = strconv.ParseInt(params.Get("num"), 10, 64)
-	request.Cursor = params.Get("cursor")
+	//params := req.URL.Query()
+	//request.Num, _ = strconv.ParseInt(params.Get("num"), 10, 64)
+	//request.Cursor = params.Get("cursor")
 
 	ctx := req.Context()
-	listBuyer, cursor, err := h.BUsecase.Fetch(ctx, request.Cursor, request.Num)
+	listBuyer, err := h.BUsecase.Fetch(ctx)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch buyer data"
@@ -71,7 +71,6 @@ func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
 	response.Desc = "Success to fetch buyer data"
 	response.Data = map[string]interface{}{
 		"buyer_list": listBuyer,
-		"cursor":     cursor,
 	}
 
 	helper.SetResponse(res, req, response)

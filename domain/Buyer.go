@@ -15,7 +15,7 @@ type Buyer struct {
 }
 
 type BuyerUsecase interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Buyer, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Buyer, err error)
 	GetByID(ctx context.Context, id int64) (res Buyer, err error)
 	Update(ctx context.Context, b *Buyer) (err error)
 	Store(ctx context.Context, b *Buyer) (err error)
@@ -23,7 +23,7 @@ type BuyerUsecase interface {
 }
 
 type BuyerRepository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Buyer, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Buyer, err error)
 	GetByID(ctx context.Context, id int64) (res Buyer, err error)
 	Update(ctx context.Context, b *Buyer) (err error)
 	Store(ctx context.Context, b *Buyer) (err error)

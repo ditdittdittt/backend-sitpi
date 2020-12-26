@@ -11,17 +11,13 @@ type buyerUsecase struct {
 	contextTimeout time.Duration
 }
 
-func (uc *buyerUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Buyer, nextCursor string, err error) {
-	if num == 0 {
-		num = 10
-	}
-
+func (uc *buyerUsecase) Fetch(ctx context.Context) (res []domain.Buyer, err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, nextCursor, err = uc.buyerRepo.Fetch(ctx, cursor, num)
+	res, err = uc.buyerRepo.Fetch(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	return
