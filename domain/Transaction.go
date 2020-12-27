@@ -19,7 +19,7 @@ type Transaction struct {
 }
 
 type TransactionUsecase interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Transaction, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Transaction, err error)
 	GetByID(ctx context.Context, id int64) (res Transaction, err error)
 	Update(ctx context.Context, t *Transaction) (err error)
 	Store(ctx context.Context, t *Transaction) (err error)
@@ -27,7 +27,7 @@ type TransactionUsecase interface {
 }
 
 type TransactionRepository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Transaction, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Transaction, err error)
 	GetByID(ctx context.Context, id int64) (res Transaction, err error)
 	Update(ctx context.Context, t *Transaction) (err error)
 	Store(ctx context.Context, t *Transaction) (err error)

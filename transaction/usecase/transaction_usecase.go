@@ -11,17 +11,14 @@ type transactionUsecase struct {
 	contextTimeout  time.Duration
 }
 
-func (uc *transactionUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Transaction, nextCursor string, err error) {
-	if num == 0 {
-		num = 10
-	}
+func (uc *transactionUsecase) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, nextCursor, err = uc.transactionRepo.Fetch(ctx, cursor, num)
+	res, err = uc.transactionRepo.Fetch(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	return
@@ -43,7 +40,17 @@ func (uc *transactionUsecase) Update(ctx context.Context, t *domain.Transaction)
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	existedTransaction, err := uc.transactionRepo.GetByID(ctx, t.ID)
+	if err != nil {
+		return
+	}
+	if existedTransaction == (domain.Transaction{}) {
+		return domain.ErrNotFound
+	}
+
+	t.CreatedAt = existedTransaction.CreatedAt
 	t.UpdatedAt = time.Now()
+
 	err = uc.transactionRepo.Update(ctx, t)
 	return
 }
@@ -51,6 +58,9 @@ func (uc *transactionUsecase) Update(ctx context.Context, t *domain.Transaction)
 func (uc *transactionUsecase) Store(ctx context.Context, t *domain.Transaction) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
+
+	t.UpdatedAt = time.Now()
+	t.CreatedAt = time.Now()
 
 	err = uc.transactionRepo.Store(ctx, t)
 	return
