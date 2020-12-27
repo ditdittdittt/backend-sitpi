@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/ditdittdittt/backend-sitpi/domain"
-	"github.com/ditdittdittt/backend-sitpi/helper"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,8 +35,8 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 			&r.AuctionID,
 			&r.OfficerID,
 			&r.BuyerID,
-			&r.DistributionArea,
 			&r.Price,
+			&r.DistributionArea,
 			&r.CreatedAt,
 			&r.UpdatedAt,
 		)
@@ -53,21 +52,12 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 	return result, nil
 }
 
-func (m *mysqlTransactionRepository) Fetch(ctx context.Context, cursor string, num int64) (res []domain.Transaction, nextCursor string, err error) {
-	query := `SELECT * FROM transaction WHERE created_at > ? ORDER BY created_at LIMIT ? `
+func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
+	query := `SELECT id, tpi_id, officer_id, auction_id, buyer_id, price, distribution_area, created_at, updated_at FROM transaction ORDER BY created_at `
 
-	decodedCursor, err := helper.DecodeCursor(cursor)
-	if err != nil && cursor != "" {
-		return nil, "", domain.ErrBadParamInput
-	}
-
-	res, err = m.fetch(ctx, query, decodedCursor, num)
+	res, err = m.fetch(ctx, query)
 	if err != nil {
-		return nil, "", err
-	}
-
-	if len(res) == int(num) {
-		nextCursor = helper.EncodeCursor(res[len(res)-1].CreatedAt)
+		return nil, err
 	}
 
 	return
