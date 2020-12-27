@@ -21,6 +21,7 @@ type CaughtFish struct {
 
 	FisherName string `json:"fisher_name"`
 	FisherNik  string `json:"fisher_nik"`
+	FishType   string `json:"fish_type"`
 }
 
 type CaughtFishUsecase interface {
