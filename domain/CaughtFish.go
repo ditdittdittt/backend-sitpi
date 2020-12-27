@@ -21,7 +21,7 @@ type CaughtFish struct {
 }
 
 type CaughtFishUsecase interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []CaughtFish, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []CaughtFish, err error)
 	GetByID(ctx context.Context, id int64) (res CaughtFish, err error)
 	Update(ctx context.Context, c *CaughtFish) (err error)
 	Store(ctx context.Context, c *CaughtFish) (err error)
@@ -29,7 +29,7 @@ type CaughtFishUsecase interface {
 }
 
 type CaughtFishRepository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []CaughtFish, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []CaughtFish, err error)
 	GetByID(ctx context.Context, id int64) (res CaughtFish, err error)
 	Update(ctx context.Context, c *CaughtFish) (err error)
 	Store(ctx context.Context, c *CaughtFish) (err error)
