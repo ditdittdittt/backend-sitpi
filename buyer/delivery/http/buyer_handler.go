@@ -30,14 +30,14 @@ type UpdateRequest struct {
 
 func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
 	handler := &BuyerHandler{BUsecase: uc}
-	router.HandleFunc("/buyer", handler.FetchBuyer).Methods("GET")
+	router.HandleFunc("/buyer", handler.Fetch).Methods("GET")
 	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/buyer", handler.Store).Methods("POST")
 	router.HandleFunc("/buyer/{id}", handler.Update).Methods("PUT")
 	router.HandleFunc("/buyer/{id}", handler.Delete).Methods("DELETE")
 }
 
-func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
+func (h *BuyerHandler) Fetch(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
 	ctx := req.Context()
@@ -45,12 +45,12 @@ func (h *BuyerHandler) FetchBuyer(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch buyer data"
-		response.Data = err
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to fetch buyer data"
+		response.Data = listBuyer
 	}
-
-	response.Code = "00"
-	response.Desc = "Success to fetch buyer data"
-	response.Data = listBuyer
 
 	helper.SetResponse(res, req, response)
 }
@@ -62,11 +62,16 @@ func (h *BuyerHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	buyer, _ := h.BUsecase.GetByID(ctx, id)
-
-	response.Code = "00"
-	response.Desc = "Success to get by ID buyer"
-	response.Data = buyer
+	buyer, err := h.BUsecase.GetByID(ctx, id)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to get by id buyer data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to get by id buyer data"
+		response.Data = buyer
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -103,10 +108,14 @@ func (h *BuyerHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	err = h.BUsecase.Store(ctx, buyer)
-
-	response.Code = "00"
-	response.Desc = "Success to store buyer data"
-	response.Data = err
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to store buyer data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to store buyer data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -138,19 +147,21 @@ func (h *BuyerHandler) Update(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	buyer := &domain.Buyer{
-		ID:        id,
-		Nik:       request.Nik,
-		Name:      request.Name,
-		Address:   request.Address,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:      id,
+		Nik:     request.Nik,
+		Name:    request.Name,
+		Address: request.Address,
 	}
 
 	err = h.BUsecase.Update(ctx, buyer)
-
-	response.Code = "00"
-	response.Desc = "Success to update buyer data"
-	response.Data = err
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to update buyer data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to update buyer data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -165,9 +176,14 @@ func (h *BuyerHandler) Delete(res http.ResponseWriter, req *http.Request) {
 
 	err := h.BUsecase.Delete(ctx, id)
 
-	response.Code = "00"
-	response.Desc = "Success to delete buyer data"
-	response.Data = err
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to delete buyer data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to delete buyer data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
