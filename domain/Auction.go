@@ -22,7 +22,7 @@ type Auction struct {
 }
 
 type AuctionUsecase interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Auction, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Auction, err error)
 	GetByID(ctx context.Context, id int64) (res Auction, err error)
 	Update(ctx context.Context, a *Auction) (err error)
 	Store(ctx context.Context, a *Auction) (err error)
@@ -30,7 +30,7 @@ type AuctionUsecase interface {
 }
 
 type AuctionRepository interface {
-	Fetch(ctx context.Context, cursor string, num int64) (res []Auction, nextCursor string, err error)
+	Fetch(ctx context.Context) (res []Auction, err error)
 	GetByID(ctx context.Context, id int64) (res Auction, err error)
 	Update(ctx context.Context, a *Auction) (err error)
 	Store(ctx context.Context, a *Auction) (err error)
