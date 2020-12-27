@@ -49,7 +49,7 @@ func (uc *auctionUsecase) Update(ctx context.Context, a *domain.Auction) (err er
 	}
 
 	a.CreatedAt = existedAuction.CreatedAt
-	a.UpdatedAt = existedAuction.UpdatedAt
+	a.UpdatedAt = time.Now()
 
 	err = uc.auctionRepo.Update(ctx, a)
 	return
