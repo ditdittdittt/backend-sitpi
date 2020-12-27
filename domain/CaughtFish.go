@@ -18,6 +18,9 @@ type CaughtFish struct {
 	FishingArea string    `json:"fishing_area"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+
+	FisherName string `json:"fisher_name"`
+	FisherNik  string `json:"fisher_nik"`
 }
 
 type CaughtFishUsecase interface {

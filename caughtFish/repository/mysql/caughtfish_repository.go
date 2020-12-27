@@ -45,6 +45,8 @@ func (m *mysqlCaughtFishRepository) fetch(ctx context.Context, query string, arg
 			&c.FishingArea,
 			&c.CreatedAt,
 			&c.UpdatedAt,
+			&c.FisherName,
+			&c.FisherNik,
 		)
 
 		if err != nil {
@@ -59,7 +61,10 @@ func (m *mysqlCaughtFishRepository) fetch(ctx context.Context, query string, arg
 }
 
 func (m *mysqlCaughtFishRepository) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {
-	query := `SELECT id, tpi_id, officer_id, fisher_id, fish_type_id, weight, weight_unit, fishing_gear, fishing_area, created_at, updated_at FROM caught_fish ORDER BY created_at`
+	query := `SELECT cf.id, cf.tpi_id, cf.officer_id, cf.fisher_id, cf.fish_type_id, cf.weight, cf.weight_unit, cf.fishing_gear, cf.fishing_area, cf.created_at, cf.updated_at, f.name, f.nik
+		FROM caught_fish AS cf
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		ORDER BY cf.created_at`
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {

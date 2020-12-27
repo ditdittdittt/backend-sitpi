@@ -17,26 +17,26 @@ type CaughtFishHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID       int64   `json:"tpi_id"`
-	OfficerID   int64   `json:"officer_id"`
-	FisherID    int64   `json:"fisher_id"`
-	FishTypeID  int64   `json:"fish_type_id"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	FishingGear string  `json:"fishing_gear"`
-	FishingArea string  `json:"fishing_area"`
+	TpiID       int64   `json:"tpi_id" validate:"required"`
+	OfficerID   int64   `json:"officer_id" validate:"required"`
+	FisherID    int64   `json:"fisher_id" validate:"required"`
+	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
+	Weight      float64 `json:"weight" validate:"required"`
+	WeightUnit  string  `json:"weight_unit" validate:"required"`
+	FishingGear string  `json:"fishing_gear" validate:"required"`
+	FishingArea string  `json:"fishing_area" validate:"required"`
 }
 
 type UpdateRequest struct {
-	ID          int64   `json:"id"`
-	TpiID       int64   `json:"tpi_id"`
-	OfficerID   int64   `json:"officer_id"`
-	FisherID    int64   `json:"fisher_id"`
-	FishTypeID  int64   `json:"fish_type_id"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	FishingGear string  `json:"fishing_gear"`
-	FishingArea string  `json:"fishing_area"`
+	ID          int64   `json:"id" validate:"required"`
+	TpiID       int64   `json:"tpi_id" validate:"required"`
+	OfficerID   int64   `json:"officer_id" validate:"required"`
+	FisherID    int64   `json:"fisher_id" validate:"required"`
+	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
+	Weight      float64 `json:"weight" validate:"required"`
+	WeightUnit  string  `json:"weight_unit" validate:"required"`
+	FishingGear string  `json:"fishing_gear" validate:"required"`
+	FishingArea string  `json:"fishing_area" validate:"required"`
 }
 
 func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
@@ -93,20 +93,33 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	body, err := helper.ReadRequest(req, response)
 	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
 		response.Data = err.Error()
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
+		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	err = helper.ValidateRequest(request, response)
 	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	ctx := req.Context()
@@ -145,20 +158,32 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 
 	body, err := helper.ReadRequest(req, response)
 	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	err = helper.ValidateRequest(request, response)
 	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
 		logrus.Error(err)
+		helper.SetResponse(res, req, response)
+		return
 	}
 
 	ctx := req.Context()
