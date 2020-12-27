@@ -39,7 +39,17 @@ func (uc *buyerUsecase) Update(ctx context.Context, b *domain.Buyer) (err error)
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	existedBuyer, err := uc.buyerRepo.GetByID(ctx, b.ID)
+	if err != nil {
+		return
+	}
+	if existedBuyer == (domain.Buyer{}) {
+		return domain.ErrNotFound
+	}
+
+	b.CreatedAt = existedBuyer.CreatedAt
 	b.UpdatedAt = time.Now()
+
 	err = uc.buyerRepo.Update(ctx, b)
 	return
 }

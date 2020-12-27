@@ -50,27 +50,18 @@ func (m *mysqlBuyerRepository) fetch(ctx context.Context, query string, args ...
 }
 
 func (m *mysqlBuyerRepository) Fetch(ctx context.Context) (res []domain.Buyer, err error) {
-	query := `SELECT * FROM buyer ORDER BY created_at`
-
-	//decodedCursor, err := helper.DecodeCursor(cursor)
-	//if err != nil && cursor != "" {
-	//	return nil, "", domain.ErrBadParamInput
-	//}
+	query := `SELECT id, name, nik, address, created_at, updated_at FROM buyer ORDER BY created_at`
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {
 		return nil, err
 	}
 
-	//if len(res) == int(num) {
-	//	nextCursor = helper.EncodeCursor(res[len(res)-1].CreatedAt)
-	//}
-
 	return
 }
 
 func (m *mysqlBuyerRepository) GetByID(ctx context.Context, id int64) (res domain.Buyer, err error) {
-	query := `SELECT * FROM buyer WHERE ID = ?`
+	query := `SELECT id, name, nik, address, created_at, updated_at FROM buyer WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
