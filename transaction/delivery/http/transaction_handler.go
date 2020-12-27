@@ -16,22 +16,22 @@ type TransactionHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID            int64  `json:"tpi_id"`
-	AuctionID        int64  `json:"auction_id"`
-	OfficerID        int64  `json:"officer_id"`
-	BuyerID          int64  `json:"buyer_id"`
-	DistributionArea string `json:"distribution_area"`
-	Price            int64  `json:"price"`
+	TpiID            int64  `json:"tpi_id" validate:"required"`
+	AuctionID        int64  `json:"auction_id" validate:"required"`
+	OfficerID        int64  `json:"officer_id" validate:"required"`
+	BuyerID          int64  `json:"buyer_id" validate:"required"`
+	DistributionArea string `json:"distribution_area" validate:"required"`
+	Price            int64  `json:"price" validate:"required"`
 }
 
 type UpdateRequest struct {
-	ID               int64  `json:"id"`
-	TpiID            int64  `json:"tpi_id"`
-	AuctionID        int64  `json:"auction_id"`
-	OfficerID        int64  `json:"officer_id"`
-	BuyerID          int64  `json:"buyer_id"`
-	DistributionArea string `json:"distribution_area"`
-	Price            int64  `json:"price"`
+	ID               int64  `json:"id" validate:"required"`
+	TpiID            int64  `json:"tpi_id" validate:"required"`
+	AuctionID        int64  `json:"auction_id" validate:"required"`
+	OfficerID        int64  `json:"officer_id" validate:"required"`
+	BuyerID          int64  `json:"buyer_id" validate:"required"`
+	DistributionArea string `json:"distribution_area" validate:"required"`
+	Price            int64  `json:"price" validate:"required"`
 }
 
 func NewTransactionHandler(router *mux.Router, uc domain.TransactionUsecase) {

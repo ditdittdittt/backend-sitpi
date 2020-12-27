@@ -16,6 +16,12 @@ type Transaction struct {
 	Price            int64     `json:"price"`
 	CreatedAt        time.Time `json:"created_at"`
 	UpdatedAt        time.Time `json:"updated_at"`
+
+	BuyerName  string  `json:"buyer_name"`
+	FisherName string  `json:"fisher_name"`
+	FishType   string  `json:"fish_type"`
+	Weight     float64 `json:"weight"`
+	WeightUnit string  `json:"weight_unit"`
 }
 
 type TransactionUsecase interface {
