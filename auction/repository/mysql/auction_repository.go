@@ -46,6 +46,9 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 			&r.Status,
 			&r.CreatedAt,
 			&r.UpdatedAt,
+			&r.FisherName,
+			&r.FishType,
+			&r.StatusName,
 		)
 
 		if err != nil {
@@ -60,7 +63,12 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 }
 
 func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auction, err error) {
-	query := `SELECT * FROM auction ORDER BY created_at`
+	query := `SELECT a.id, a.tpi_id, a.fisher_id, a.officer_id, a.fish_type_id, a.weight, a.weight_unit, a.fishing_gear, a.fishing_area, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
+		FROM auction AS a
+		INNER JOIN fisher AS f ON a.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN auction_status AS s ON a.status=s.id
+		ORDER BY a.created_at`
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {

@@ -19,6 +19,10 @@ type Auction struct {
 	Status      int       `json:"status"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+
+	FisherName string `json:"fisher_name"`
+	FishType   string `json:"fish_type"`
+	StatusName string `json:"status_name"`
 }
 
 type AuctionUsecase interface {
