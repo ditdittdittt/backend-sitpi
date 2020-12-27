@@ -32,13 +32,18 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 		err = rows.Scan(
 			&r.ID,
 			&r.TpiID,
-			&r.AuctionID,
 			&r.OfficerID,
+			&r.AuctionID,
 			&r.BuyerID,
 			&r.Price,
 			&r.DistributionArea,
 			&r.CreatedAt,
 			&r.UpdatedAt,
+			&r.BuyerName,
+			&r.FisherName,
+			&r.FishType,
+			&r.Weight,
+			&r.WeightUnit,
 		)
 
 		if err != nil {
@@ -53,7 +58,13 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 }
 
 func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
-	query := `SELECT id, tpi_id, officer_id, auction_id, buyer_id, price, distribution_area, created_at, updated_at FROM transaction ORDER BY created_at `
+	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, a.weight_unit
+		FROM transaction AS t
+		INNER JOIN auction AS a ON t.auction_id=a.id
+		INNER JOIN fisher AS f ON a.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN buyer AS b ON t.buyer_id=b.id
+		ORDER BY t.created_at `
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {
