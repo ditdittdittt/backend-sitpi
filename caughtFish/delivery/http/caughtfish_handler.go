@@ -8,20 +8,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 type CaughtFishHandler struct {
 	CFUsecase domain.CaughtFishUsecase
-}
-
-type FetchCaughtFishRequest struct {
-	Cursor string `json:"cursor"`
-	Num    int64  `json:"num"`
-}
-
-type GetByIDRequest struct {
-	ID int64 `json:"id"`
 }
 
 type StoreRequest struct {
@@ -47,84 +39,50 @@ type UpdateRequest struct {
 	FishingArea string  `json:"fishing_area"`
 }
 
-type DeleteRequest struct {
-	ID int64 `json:"id"`
-}
-
 func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
 	handler := &CaughtFishHandler{CFUsecase: uc}
-	router.HandleFunc("/caught_fish/index", handler.FetchCaughtFish).Methods("GET")
-	router.HandleFunc("/caught_fish/get_by_id", handler.GetByID).Methods("GET")
-	router.HandleFunc("/caught_fish/store", handler.Store).Methods("POST")
-	router.HandleFunc("/caught_fish/update", handler.Update).Methods("PUT")
-	router.HandleFunc("/caught_fish/delete", handler.Delete).Methods("DELETE")
+	router.HandleFunc("/caught_fish", handler.FetchCaughtFish).Methods("GET")
+	router.HandleFunc("/caught_fish/{id}", handler.GetByID).Methods("GET")
+	router.HandleFunc("/caught_fish", handler.Store).Methods("POST")
+	router.HandleFunc("/caught_fish/{id}", handler.Update).Methods("PUT")
+	router.HandleFunc("/caught_fish/{id}", handler.Delete).Methods("DELETE")
 }
 
 func (h *CaughtFishHandler) FetchCaughtFish(res http.ResponseWriter, req *http.Request) {
-	request := &FetchCaughtFishRequest{}
 	response := _response.New()
 
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
 	ctx := req.Context()
-	listCaughtFish, _, err := h.CFUsecase.Fetch(ctx, request.Cursor, request.Num)
+	listCaughtFish, err := h.CFUsecase.Fetch(ctx)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch caught fish data"
-		response.Data = err
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to fetch caught fish data"
+		response.Data = listCaughtFish
 	}
-
-	response.Code = "00"
-	response.Desc = "Success to fetch caught fish data"
-	response.Data = listCaughtFish
 
 	helper.SetResponse(res, req, response)
 }
 
 func (h *CaughtFishHandler) GetByID(res http.ResponseWriter, req *http.Request) {
-	request := &GetByIDRequest{}
 	response := _response.New()
 
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
+	params := mux.Vars(req)
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	caughtFish, err := h.CFUsecase.GetByID(ctx, request.ID)
-
-	response.Code = "00"
-	response.Desc = "Success to get by ID caught fish data"
-	response.Data = caughtFish
+	caughtFish, err := h.CFUsecase.GetByID(ctx, id)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to get by ID caught fish data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to get by ID caught fish data"
+		response.Data = caughtFish
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -164,11 +122,16 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	err = h.CFUsecase.Store(ctx, caughtFish)
 
-	response.Code = "00"
-	response.Desc = "Success to store caught fish data"
-	response.Data = caughtFish
+	err = h.CFUsecase.Store(ctx, caughtFish)
+	if err != nil {
+		response.Code = "XX"
+		response.Data = "Failed to store caught fish data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to store caught fish data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -176,6 +139,9 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 	request := &UpdateRequest{}
 	response := _response.New()
+
+	params := mux.Vars(req)
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	body, err := helper.ReadRequest(req, response)
 	if err != nil {
@@ -197,7 +163,7 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	caughtFish := &domain.CaughtFish{
-		ID:          request.ID,
+		ID:          id,
 		TpiID:       request.TpiID,
 		OfficerID:   request.OfficerID,
 		FisherID:    request.FisherID,
@@ -210,40 +176,34 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 	}
 	err = h.CFUsecase.Update(ctx, caughtFish)
 
-	response.Code = "00"
-	response.Desc = "Success to update caught fish data"
-	response.Data = caughtFish
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to update caught fish data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to update caught fish data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
 
 func (h *CaughtFishHandler) Delete(res http.ResponseWriter, req *http.Request) {
-	request := &DeleteRequest{}
 	response := _response.New()
 
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
+	params := mux.Vars(req)
+	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	err = h.CFUsecase.Delete(ctx, request.ID)
-
-	response.Code = "00"
-	response.Desc = "Success to delete caught fish data"
+	err := h.CFUsecase.Delete(ctx, id)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to delete caught fish data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to delete caught fish data"
+	}
 
 	helper.SetResponse(res, req, response)
 }

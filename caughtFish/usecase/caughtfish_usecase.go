@@ -11,17 +11,14 @@ type caughtFishUsecase struct {
 	contextTimeout time.Duration
 }
 
-func (uc *caughtFishUsecase) Fetch(ctx context.Context, cursor string, num int64) (res []domain.CaughtFish, nextCursor string, err error) {
-	if num == 0 {
-		num = 10
-	}
+func (uc *caughtFishUsecase) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, nextCursor, err = uc.caughtFishRepo.Fetch(ctx, cursor, num)
+	res, err = uc.caughtFishRepo.Fetch(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	return
@@ -43,7 +40,17 @@ func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	existedCaughtFish, err := uc.caughtFishRepo.GetByID(ctx, cf.ID)
+	if err != nil {
+		return
+	}
+	if existedCaughtFish == (domain.CaughtFish{}) {
+		return domain.ErrNotFound
+	}
+
+	cf.CreatedAt = existedCaughtFish.CreatedAt
 	cf.UpdatedAt = time.Now()
+
 	err = uc.caughtFishRepo.Update(ctx, cf)
 	return
 }
