@@ -77,7 +77,11 @@ func (m *mysqlCaughtFishRepository) Fetch(ctx context.Context) (res []domain.Cau
 }
 
 func (m *mysqlCaughtFishRepository) GetByID(ctx context.Context, id int64) (res domain.CaughtFish, err error) {
-	query := `SELECT * FROM caught_fish WHERE ID = ?`
+	query := `SELECT cf.id, cf.tpi_id, cf.officer_id, cf.fisher_id, cf.fish_type_id, cf.weight, cf.weight_unit, cf.fishing_gear, cf.fishing_area, cf.created_at, cf.updated_at, f.name, f.nik, ft.name 
+		FROM caught_fish AS cf 
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
+		WHERE cf.id=?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {

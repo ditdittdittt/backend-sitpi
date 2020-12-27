@@ -79,7 +79,12 @@ func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auctio
 }
 
 func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res domain.Auction, err error) {
-	query := `SELECT * FROM auction WHERE ID = ?`
+	query := `SELECT a.id, a.tpi_id, a.fisher_id, a.officer_id, a.fish_type_id, a.weight, a.weight_unit, a.fishing_gear, a.fishing_area, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
+		FROM auction AS a
+		INNER JOIN fisher AS f ON a.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN auction_status AS s ON a.status=s.id
+		WHERE a.id=?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {

@@ -75,7 +75,14 @@ func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Tr
 }
 
 func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res domain.Transaction, err error) {
-	query := `SELECT * FROM transaction WHERE ID = ?`
+	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, a.weight_unit 
+		FROM transaction AS t
+		INNER JOIN auction AS a ON t.auction_id=a.id
+		INNER JOIN fisher AS f ON a.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN buyer AS b ON t.buyer_id=b.id
+		WHERE t.id=?
+		`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
