@@ -28,9 +28,6 @@ type StoreRequest struct {
 }
 
 type UpdateRequest struct {
-	ID          int64   `json:"id" validate:"required"`
-	TpiID       int64   `json:"tpi_id" validate:"required"`
-	OfficerID   int64   `json:"officer_id" validate:"required"`
 	FisherID    int64   `json:"fisher_id" validate:"required"`
 	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
 	Weight      float64 `json:"weight" validate:"required"`
@@ -189,8 +186,6 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 	ctx := req.Context()
 	caughtFish := &domain.CaughtFish{
 		ID:          id,
-		TpiID:       request.TpiID,
-		OfficerID:   request.OfficerID,
 		FisherID:    request.FisherID,
 		FishTypeID:  request.FishTypeID,
 		Weight:      request.Weight,
