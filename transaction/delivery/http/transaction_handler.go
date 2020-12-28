@@ -25,7 +25,6 @@ type StoreRequest struct {
 }
 
 type UpdateRequest struct {
-	ID               int64  `json:"id" validate:"required"`
 	TpiID            int64  `json:"tpi_id" validate:"required"`
 	AuctionID        int64  `json:"auction_id" validate:"required"`
 	OfficerID        int64  `json:"officer_id" validate:"required"`
