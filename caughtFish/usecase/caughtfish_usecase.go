@@ -8,6 +8,7 @@ import (
 
 type caughtFishUsecase struct {
 	caughtFishRepo domain.CaughtFishRepository
+	auctionRepo    domain.AuctionRepository
 	contextTimeout time.Duration
 }
 
@@ -57,11 +58,33 @@ func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) 
 	return
 }
 
-func (uc *caughtFishUsecase) Store(ctx context.Context, cf *domain.CaughtFish) (err error) {
+func (uc *caughtFishUsecase) Store(ctx context.Context, cf *domain.CaughtFish, a *domain.Auction) (err error) {
+
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	err = uc.caughtFishRepo.Store(ctx, cf)
+	cf.TpiID = 1
+	cf.OfficerID = 1
+	cf.CreatedAt = time.Now()
+	cf.UpdatedAt = time.Now()
+
+	lastID, err := uc.caughtFishRepo.Store(ctx, cf)
+	if err != nil {
+		return
+	}
+
+	a.TpiID = 1
+	a.OfficerID = 1
+	a.CaughtFishID = lastID
+	a.Status = 1
+	a.CreatedAt = time.Now()
+	a.UpdatedAt = time.Now()
+
+	err = uc.auctionRepo.Store(ctx, a)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -81,9 +104,10 @@ func (uc *caughtFishUsecase) Delete(ctx context.Context, id int64) (err error) {
 	return
 }
 
-func NewCaughtFishUsecase(c domain.CaughtFishRepository, timeout time.Duration) domain.CaughtFishUsecase {
+func NewCaughtFishUsecase(c domain.CaughtFishRepository, a domain.AuctionRepository, timeout time.Duration) domain.CaughtFishUsecase {
 	return &caughtFishUsecase{
 		caughtFishRepo: c,
+		auctionRepo:    a,
 		contextTimeout: timeout,
 	}
 }

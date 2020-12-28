@@ -16,18 +16,14 @@ type TransactionHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID            int64  `json:"tpi_id" validate:"required"`
 	AuctionID        int64  `json:"auction_id" validate:"required"`
-	OfficerID        int64  `json:"officer_id" validate:"required"`
 	BuyerID          int64  `json:"buyer_id" validate:"required"`
 	DistributionArea string `json:"distribution_area" validate:"required"`
 	Price            int64  `json:"price" validate:"required"`
 }
 
 type UpdateRequest struct {
-	TpiID            int64  `json:"tpi_id" validate:"required"`
 	AuctionID        int64  `json:"auction_id" validate:"required"`
-	OfficerID        int64  `json:"officer_id" validate:"required"`
 	BuyerID          int64  `json:"buyer_id" validate:"required"`
 	DistributionArea string `json:"distribution_area" validate:"required"`
 	Price            int64  `json:"price" validate:"required"`
@@ -105,9 +101,7 @@ func (h *TransactionHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	transaction := &domain.Transaction{
-		TpiID:            request.TpiID,
 		AuctionID:        request.AuctionID,
-		OfficerID:        request.OfficerID,
 		BuyerID:          request.BuyerID,
 		DistributionArea: request.DistributionArea,
 		Price:            request.Price,
@@ -154,9 +148,7 @@ func (h *TransactionHandler) Update(res http.ResponseWriter, req *http.Request) 
 	ctx := req.Context()
 	transaction := &domain.Transaction{
 		ID:               id,
-		TpiID:            request.TpiID,
 		AuctionID:        request.AuctionID,
-		OfficerID:        request.OfficerID,
 		BuyerID:          request.BuyerID,
 		DistributionArea: request.DistributionArea,
 		Price:            request.Price,

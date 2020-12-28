@@ -8,6 +8,7 @@ import (
 
 type transactionUsecase struct {
 	transactionRepo domain.TransactionRepository
+	auctionRepo     domain.AuctionRepository
 	contextTimeout  time.Duration
 }
 
@@ -48,6 +49,8 @@ func (uc *transactionUsecase) Update(ctx context.Context, t *domain.Transaction)
 		return domain.ErrNotFound
 	}
 
+	t.TpiID = 1
+	t.OfficerID = 1
 	t.CreatedAt = existedTransaction.CreatedAt
 	t.UpdatedAt = time.Now()
 
@@ -59,10 +62,21 @@ func (uc *transactionUsecase) Store(ctx context.Context, t *domain.Transaction) 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	t.TpiID = 1
+	t.OfficerID = 1
 	t.UpdatedAt = time.Now()
 	t.CreatedAt = time.Now()
 
 	err = uc.transactionRepo.Store(ctx, t)
+	if err != nil {
+		return
+	}
+
+	err = uc.auctionRepo.UpdateStatus(ctx, t.AuctionID)
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -82,9 +96,10 @@ func (uc *transactionUsecase) Delete(ctx context.Context, id int64) (err error) 
 	return
 }
 
-func NewTransactionUsecase(t domain.TransactionRepository, timeout time.Duration) domain.TransactionUsecase {
+func NewTransactionUsecase(t domain.TransactionRepository, a domain.AuctionRepository, timeout time.Duration) domain.TransactionUsecase {
 	return &transactionUsecase{
 		transactionRepo: t,
+		auctionRepo:     a,
 		contextTimeout:  timeout,
 	}
 }

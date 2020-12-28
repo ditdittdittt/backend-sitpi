@@ -122,7 +122,7 @@ func (m *mysqlCaughtFishRepository) Update(ctx context.Context, c *domain.Caught
 
 }
 
-func (m *mysqlCaughtFishRepository) Store(ctx context.Context, c *domain.CaughtFish) (err error) {
+func (m *mysqlCaughtFishRepository) Store(ctx context.Context, c *domain.CaughtFish) (lastID int64, err error) {
 	query := `INSERT caught_fish SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
@@ -134,7 +134,7 @@ func (m *mysqlCaughtFishRepository) Store(ctx context.Context, c *domain.CaughtF
 		return
 	}
 
-	lastID, err := res.LastInsertId()
+	lastID, err = res.LastInsertId()
 	if err != nil {
 		return
 	}

@@ -168,3 +168,29 @@ func (m *mysqlAcutionRepository) Delete(ctx context.Context, id int64) (err erro
 
 	return
 }
+
+func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (err error) {
+	query := `UPDATE auction SET status=2 WHERE id=?`
+
+	stmt, err := m.Conn.PrepareContext(ctx, query)
+	if err != nil {
+		return
+	}
+
+	res, err := stmt.ExecContext(ctx, id)
+	if err != nil {
+		return
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return
+	}
+
+	if rowsAffected != 1 {
+		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", rowsAffected)
+		return
+	}
+
+	return
+}

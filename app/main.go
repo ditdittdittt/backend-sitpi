@@ -72,20 +72,20 @@ func main() {
 
 	r := mux.NewRouter()
 
-	caughtFishRepo := _caughtFishRepo.NewMysqlCaughtFishRepository(dbConn)
-	caughtFishUsecase := _caughtFishUsecase.NewCaughtFishUsecase(caughtFishRepo, timeoutContext)
-	_caughtFishHttpDelivery.NewCaughtFishHandler(r, caughtFishUsecase)
-
 	auctionRepo := _auctionRepo.NewMysqlAuctionRepository(dbConn)
 	auctionUsecase := _auctionUsecase.NewAuctionUsecase(auctionRepo, timeoutContext)
 	_auctionHttpDelivery.NewAuctionHandler(r, auctionUsecase)
+
+	caughtFishRepo := _caughtFishRepo.NewMysqlCaughtFishRepository(dbConn)
+	caughtFishUsecase := _caughtFishUsecase.NewCaughtFishUsecase(caughtFishRepo, auctionRepo, timeoutContext)
+	_caughtFishHttpDelivery.NewCaughtFishHandler(r, caughtFishUsecase)
 
 	fisherRepo := _fisherRepo.NewMysqlFisherRepository(dbConn)
 	fisherUsecase := _fisherUsecase.NewFisherUsecase(fisherRepo, timeoutContext)
 	_fisherHttpDelivery.NewFisherHandler(r, fisherUsecase)
 
 	transactionRepo := _transactionRepo.NewMysqlTransactionRepository(dbConn)
-	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, timeoutContext)
+	transactionUsecase := _transactionUsecase.NewTransactionUsecase(transactionRepo, auctionRepo, timeoutContext)
 	_transactionHttpDelivery.NewTransactionHandler(r, transactionUsecase)
 
 	buyerRepo := _buyerRepo.NewMysqlBuyerRepository(dbConn)

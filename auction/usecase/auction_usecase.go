@@ -62,9 +62,9 @@ func (uc *auctionUsecase) Store(ctx context.Context, a *domain.Auction) (err err
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	a.Status = 1
 	a.CreatedAt = time.Now()
 	a.UpdatedAt = time.Now()
-	a.Status = 1
 
 	err = uc.auctionRepo.Store(ctx, a)
 	return

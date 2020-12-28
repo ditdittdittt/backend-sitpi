@@ -16,17 +16,13 @@ type AuctionHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID        int64   `json:"tpi_id"`
-	OfficerID    int64   `json:"officer_id"`
-	CaughtFishID int64   `json:"caught_fish_id"`
-	Weight       float64 `json:"weight"`
-	WeightUnit   string  `json:"weight_unit"`
+	Weight     float64 `json:"weight"`
+	WeightUnit string  `json:"weight_unit"`
 }
 
 type UpdateRequest struct {
 	Weight     float64 `json:"weight"`
 	WeightUnit string  `json:"weight_unit"`
-	Status     int     `json:"status"`
 }
 
 func NewAuctionHandler(router *mux.Router, uc domain.AuctionUsecase) {
@@ -101,11 +97,8 @@ func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	auction := &domain.Auction{
-		TpiID:        request.TpiID,
-		OfficerID:    request.OfficerID,
-		CaughtFishID: request.CaughtFishID,
-		Weight:       request.Weight,
-		WeightUnit:   request.WeightUnit,
+		Weight:     request.Weight,
+		WeightUnit: request.WeightUnit,
 	}
 
 	err = h.AUsecase.Store(ctx, auction)
@@ -151,7 +144,6 @@ func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
 		ID:         id,
 		Weight:     request.Weight,
 		WeightUnit: request.WeightUnit,
-		Status:     request.Status,
 	}
 
 	err = h.AUsecase.Update(ctx, auction)

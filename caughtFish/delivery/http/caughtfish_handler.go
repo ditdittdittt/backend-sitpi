@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type CaughtFishHandler struct {
@@ -17,14 +16,15 @@ type CaughtFishHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID       int64   `json:"tpi_id" validate:"required"`
-	OfficerID   int64   `json:"officer_id" validate:"required"`
 	FisherID    int64   `json:"fisher_id" validate:"required"`
 	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
 	Weight      float64 `json:"weight" validate:"required"`
 	WeightUnit  string  `json:"weight_unit" validate:"required"`
 	FishingGear string  `json:"fishing_gear" validate:"required"`
 	FishingArea string  `json:"fishing_area" validate:"required"`
+
+	AuctionWeight     float64 `json:"auction_weight"`
+	AuctionWeightUnit string  `json:"auction_weight_unit"`
 }
 
 type UpdateRequest struct {
@@ -121,19 +121,20 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	caughtFish := &domain.CaughtFish{
-		TpiID:       request.TpiID,
-		OfficerID:   request.OfficerID,
 		FisherID:    request.FisherID,
 		FishTypeID:  request.FishTypeID,
 		Weight:      request.Weight,
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
 	}
 
-	err = h.CFUsecase.Store(ctx, caughtFish)
+	auction := &domain.Auction{
+		Weight:     request.AuctionWeight,
+		WeightUnit: request.AuctionWeightUnit,
+	}
+
+	err = h.CFUsecase.Store(ctx, caughtFish, auction)
 	if err != nil {
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
@@ -192,7 +193,6 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 		WeightUnit:  request.WeightUnit,
 		FishingGear: request.FishingGear,
 		FishingArea: request.FishingArea,
-		UpdatedAt:   time.Now(),
 	}
 	err = h.CFUsecase.Update(ctx, caughtFish)
 
