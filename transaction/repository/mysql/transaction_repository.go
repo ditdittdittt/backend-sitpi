@@ -61,8 +61,9 @@ func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Tr
 	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, a.weight_unit
 		FROM transaction AS t
 		INNER JOIN auction AS a ON t.auction_id=a.id
-		INNER JOIN fisher AS f ON a.fisher_id=f.id
-		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		INNER JOIN buyer AS b ON t.buyer_id=b.id
 		ORDER BY t.created_at `
 
@@ -78,8 +79,9 @@ func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res
 	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, a.weight_unit 
 		FROM transaction AS t
 		INNER JOIN auction AS a ON t.auction_id=a.id
-		INNER JOIN fisher AS f ON a.fisher_id=f.id
-		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		INNER JOIN buyer AS b ON t.buyer_id=b.id
 		WHERE t.id=?
 		`
