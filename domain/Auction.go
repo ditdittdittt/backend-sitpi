@@ -7,22 +7,19 @@ import (
 
 // Auction type
 type Auction struct {
-	ID          int64     `json:"id"`
-	TpiID       int64     `json:"tpi_id"`
-	FisherID    int64     `json:"fisher_id"`
-	OfficerID   int64     `json:"officer_id"`
-	FishTypeID  int64     `json:"fish_type_id"`
-	Weight      float64   `json:"weight"`
-	WeightUnit  string    `json:"weight_unit"`
-	FishingGear string    `json:"fishing_gear"`
-	FishingArea string    `json:"fishing_area"`
-	Status      int       `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID           int64     `json:"id"`
+	TpiID        int64     `json:"tpi_id"`
+	OfficerID    int64     `json:"officer_id"`
+	CaughtFishID int64     `json:"caught_fish_id"`
+	Weight       float64   `json:"weight"`
+	WeightUnit   string    `json:"weight_unit"`
+	Status       int       `json:"status"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 
-	FisherName string `json:"fisher_name"`
-	FishType   string `json:"fish_type"`
-	StatusName string `json:"status_name"`
+	FisherName string `json:"fisher_name,omitempty"`
+	FishType   string `json:"fish_type,omitempty"`
+	StatusName string `json:"status_name,omitempty"`
 }
 
 type AuctionUsecase interface {

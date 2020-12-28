@@ -48,6 +48,9 @@ func (uc *auctionUsecase) Update(ctx context.Context, a *domain.Auction) (err er
 		return domain.ErrNotFound
 	}
 
+	a.TpiID = existedAuction.TpiID
+	a.OfficerID = existedAuction.OfficerID
+	a.CaughtFishID = existedAuction.CaughtFishID
 	a.CreatedAt = existedAuction.CreatedAt
 	a.UpdatedAt = time.Now()
 

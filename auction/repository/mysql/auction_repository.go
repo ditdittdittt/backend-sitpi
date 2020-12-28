@@ -36,13 +36,10 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 		err = rows.Scan(
 			&r.ID,
 			&r.TpiID,
-			&r.FisherID,
 			&r.OfficerID,
-			&r.FishTypeID,
+			&r.CaughtFishID,
 			&r.Weight,
 			&r.WeightUnit,
-			&r.FishingGear,
-			&r.FishingArea,
 			&r.Status,
 			&r.CreatedAt,
 			&r.UpdatedAt,
@@ -63,10 +60,11 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 }
 
 func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auction, err error) {
-	query := `SELECT a.id, a.tpi_id, a.fisher_id, a.officer_id, a.fish_type_id, a.weight, a.weight_unit, a.fishing_gear, a.fishing_area, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
+	query := `SELECT a.id, a.tpi_id, a.officer_id, a.caught_fish_id, a.weight, a.weight_unit, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
 		FROM auction AS a
-		INNER JOIN fisher AS f ON a.fisher_id=f.id
-		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		INNER JOIN auction_status AS s ON a.status=s.id
 		ORDER BY a.created_at`
 
@@ -79,10 +77,11 @@ func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auctio
 }
 
 func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res domain.Auction, err error) {
-	query := `SELECT a.id, a.tpi_id, a.fisher_id, a.officer_id, a.fish_type_id, a.weight, a.weight_unit, a.fishing_gear, a.fishing_area, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
+	query := `SELECT a.id, a.tpi_id, a.officer_id, a.caught_fish_id, a.weight, a.weight_unit, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
 		FROM auction AS a
-		INNER JOIN fisher AS f ON a.fisher_id=f.id
-		INNER JOIN fish_type AS ft ON a.fish_type_id=ft.id
+		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		INNER JOIN auction_status AS s ON a.status=s.id
 		WHERE a.id=?`
 
@@ -101,14 +100,14 @@ func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res dom
 }
 
 func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) (err error) {
-	query := `UPDATE auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE auction SET tpi_id=?, officer_id=?, caught_fish_id=?, weight=?, weight_unit=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.CaughtFishID, a.Weight, a.WeightUnit, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
 	if err != nil {
 		return
 	}
@@ -125,13 +124,13 @@ func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) 
 }
 
 func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (err error) {
-	query := `INSERT auction SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight=?, weight_unit=?, fishing_gear=?, fishing_area=?, status=?, created_at=?, updated_at=?`
+	query := `INSERT auction SET tpi_id=?, officer_id=?, caught_fish_id=?, weight=?, weight_unit=?, status=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.FisherID, a.FishTypeID, a.Weight, a.WeightUnit, a.FishingGear, a.FishingArea, a.Status, a.CreatedAt, a.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.CaughtFishID, a.Weight, a.WeightUnit, a.Status, a.CreatedAt, a.UpdatedAt)
 	if err != nil {
 		return
 	}

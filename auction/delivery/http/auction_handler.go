@@ -16,29 +16,17 @@ type AuctionHandler struct {
 }
 
 type StoreRequest struct {
-	TpiID       int64   `json:"tpi_id"`
-	OfficerID   int64   `json:"officer_id"`
-	FisherID    int64   `json:"fisher_id"`
-	FishTypeID  int64   `json:"fish_type_id"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	FishingGear string  `json:"fishing_gear"`
-	FishingArea string  `json:"fishing_area"`
-	Price       int     `json:"price"`
+	TpiID        int64   `json:"tpi_id"`
+	OfficerID    int64   `json:"officer_id"`
+	CaughtFishID int64   `json:"caught_fish_id"`
+	Weight       float64 `json:"weight"`
+	WeightUnit   string  `json:"weight_unit"`
 }
 
 type UpdateRequest struct {
-	ID          int64   `json:"id"`
-	TpiID       int64   `json:"tpi_id"`
-	OfficerID   int64   `json:"officer_id"`
-	FisherID    int64   `json:"fisher_id"`
-	FishTypeID  int64   `json:"fish_type_id"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	FishingGear string  `json:"fishing_gear"`
-	FishingArea string  `json:"fishing_area"`
-	Price       int     `json:"price"`
-	Status      int     `json:"status"`
+	Weight     float64 `json:"weight"`
+	WeightUnit string  `json:"weight_unit"`
+	Status     int     `json:"status"`
 }
 
 func NewAuctionHandler(router *mux.Router, uc domain.AuctionUsecase) {
@@ -113,14 +101,11 @@ func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	auction := &domain.Auction{
-		TpiID:       request.TpiID,
-		FisherID:    request.FisherID,
-		OfficerID:   request.OfficerID,
-		FishTypeID:  request.FishTypeID,
-		Weight:      request.Weight,
-		WeightUnit:  request.WeightUnit,
-		FishingGear: request.FishingGear,
-		FishingArea: request.FishingArea,
+		TpiID:        request.TpiID,
+		OfficerID:    request.OfficerID,
+		CaughtFishID: request.CaughtFishID,
+		Weight:       request.Weight,
+		WeightUnit:   request.WeightUnit,
 	}
 
 	err = h.AUsecase.Store(ctx, auction)
@@ -131,7 +116,6 @@ func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to store auction data"
-		response.Data = auction
 	}
 
 	helper.SetResponse(res, req, response)
@@ -164,16 +148,10 @@ func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	auction := &domain.Auction{
-		ID:          id,
-		TpiID:       request.TpiID,
-		FisherID:    request.FisherID,
-		OfficerID:   request.OfficerID,
-		FishTypeID:  request.FishTypeID,
-		Weight:      request.Weight,
-		WeightUnit:  request.WeightUnit,
-		FishingGear: request.FishingGear,
-		FishingArea: request.FishingArea,
-		Status:      request.Status,
+		ID:         id,
+		Weight:     request.Weight,
+		WeightUnit: request.WeightUnit,
+		Status:     request.Status,
 	}
 
 	err = h.AUsecase.Update(ctx, auction)
@@ -184,7 +162,6 @@ func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to update auction data"
-		response.Data = auction
 	}
 
 	helper.SetResponse(res, req, response)
