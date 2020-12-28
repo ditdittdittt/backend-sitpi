@@ -48,6 +48,8 @@ func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) 
 		return domain.ErrNotFound
 	}
 
+	cf.TpiID = existedCaughtFish.TpiID
+	cf.OfficerID = existedCaughtFish.OfficerID
 	cf.CreatedAt = existedCaughtFish.CreatedAt
 	cf.UpdatedAt = time.Now()
 
