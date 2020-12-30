@@ -7,11 +7,10 @@
     "timeout":2
   },
   "database": {
-    "host": "localhost",
+    "host": "mysql",
     "port": "3306",
-    "user": "root",
-    "pass": "",
+    "user": "user",
+    "pass": "password",
     "name": "sitpi"
   }
-
 }
