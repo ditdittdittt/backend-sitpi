@@ -1,0 +1,32 @@
+version: "2.3"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-sitpi
+    ports:
+      - 9090:9090
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./config.json:/app/config.json
+
+  mysql:
+    image: mysql:5.7
+    container_name: backend-sitpi-mysql
+    command: mysqld --user=root
+    volumes:
+      - ./sitpi.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=sitpi
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
