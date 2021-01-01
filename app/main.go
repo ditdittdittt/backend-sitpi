@@ -93,6 +93,8 @@ func main() {
 	_buyerHttpDelivery.NewBuyerHandler(r, buyerUsecase)
 
 	handler := cors.Default().Handler(r)
+	c := cors.New(cors.Options{AllowedMethods: []string{"POST", "GET", "DELETE", "PUT"}})
+	handler = c.Handler(handler)
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), handler)
 }
