@@ -45,6 +45,7 @@ type DeleteRequest struct {
 func NewFisherHandler(router *mux.Router, uc domain.FisherUsecase) {
 	handler := &FisherHandler{FUsecase: uc}
 	router.HandleFunc("/fisher", handler.FetchFisher).Methods("GET")
+	router.HandleFunc("/fisher/inquiry", handler.Inquiry).Methods("GET")
 	router.HandleFunc("/fisher/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/fisher", handler.Store).Methods("POST")
 	router.HandleFunc("/fisher/{id}", handler.Update).Methods("PUT")
@@ -59,12 +60,12 @@ func (h *FisherHandler) FetchFisher(res http.ResponseWriter, req *http.Request) 
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch fisher data"
-		response.Data = err
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to fetch fisher data"
+		response.Data = listFisher
 	}
-
-	response.Code = "00"
-	response.Desc = "Success to fetch fisher data"
-	response.Data = listFisher
 
 	helper.SetResponse(res, req, response)
 }
@@ -76,11 +77,16 @@ func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	fisher, _ := h.FUsecase.GetByID(ctx, id)
-
-	response.Code = "00"
-	response.Desc = "Success to get by ID fisher data"
-	response.Data = fisher
+	fisher, err := h.FUsecase.GetByID(ctx, id)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to get by ID fisher data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to get by ID fisher data"
+		response.Data = fisher
+	}
 
 	helper.SetResponse(res, req, response)
 
@@ -117,10 +123,14 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 		UpdatedAt: time.Now(),
 	}
 	err = h.FUsecase.Store(ctx, fisher)
-
-	response.Code = "00"
-	response.Desc = "Success to store fisher data"
-	response.Data = err
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to store fisher data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to store fisher data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -160,10 +170,14 @@ func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
 		UpdatedAt: time.Now(),
 	}
 	err = h.FUsecase.Update(ctx, fisher)
-
-	response.Code = "00"
-	response.Desc = "Success to update fisher data"
-	response.Data = err
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to update fisher data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to update fisher data"
+	}
 
 	helper.SetResponse(res, req, response)
 }
@@ -176,10 +190,32 @@ func (h *FisherHandler) Delete(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	err := h.FUsecase.Delete(ctx, id)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to delete fisher data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to delete fisher data"
+	}
 
-	response.Code = "00"
-	response.Desc = "Success to delete fisher data"
-	response.Data = err
+	helper.SetResponse(res, req, response)
+}
+
+func (h *FisherHandler) Inquiry(res http.ResponseWriter, req *http.Request) {
+	response := _response.New()
+
+	ctx := req.Context()
+	listFisher, err := h.FUsecase.Inquiry(ctx)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to inquiry fisher data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to inquiry fisher data"
+		response.Data = listFisher
+	}
 
 	helper.SetResponse(res, req, response)
 }
