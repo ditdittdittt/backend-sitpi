@@ -47,12 +47,8 @@ func ReadRequest(req *http.Request, response *response.Response) ([]byte, error)
 
 func SetResponse(res http.ResponseWriter, req *http.Request, response *response.Response) {
 	res.Header().Set("Content-Type", "application/json")
-	res.Header().Set("Access-Control-Allow-Origin", "*")
-	res.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE")
 
-	res.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	_ = json.NewEncoder(res).Encode(response)
-
 }
 
 func ValidateRequest(input interface{}, response *response.Response) error {
