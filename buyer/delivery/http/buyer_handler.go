@@ -32,8 +32,8 @@ func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
 	handler := &BuyerHandler{BUsecase: uc}
 	router.HandleFunc("/buyer", handler.Fetch).Methods("GET")
 	router.HandleFunc("/buyer/inquiry", handler.Inquiry).Methods("GET")
-	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/buyer", handler.Store).Methods("POST")
+	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/buyer/{id}", handler.Update).Methods("PUT")
 	router.HandleFunc("/buyer/{id}", handler.Delete).Methods("DELETE")
 }
