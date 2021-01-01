@@ -78,6 +78,18 @@ func (uc *buyerUsecase) Delete(ctx context.Context, id int64) (err error) {
 	return
 }
 
+func (uc *buyerUsecase) Inquiry(ctx context.Context) (res []domain.Buyer, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	res, err = uc.buyerRepo.Inquiry(ctx)
+	if err != nil {
+		return
+	}
+
+	return
+}
+
 func NewBuyerUsecase(b domain.BuyerRepository, timeout time.Duration) domain.BuyerUsecase {
 	return &buyerUsecase{
 		buyerRepo:      b,
