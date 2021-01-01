@@ -8,9 +8,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN go get github.com/rs/cors
-RUN go install -v ./...
-
 RUN make engine
 
 # Distribution
