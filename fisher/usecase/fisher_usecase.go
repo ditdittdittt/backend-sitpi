@@ -68,6 +68,19 @@ func (uc *fisherUsecase) Delete(ctx context.Context, id int64) (err error) {
 	return
 }
 
+func (uc *fisherUsecase) Inquiry(ctx context.Context) (res []domain.Fisher, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	res, err = uc.fisherRepo.Inquiry(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
 func NewFisherUsecase(f domain.FisherRepository, timeout time.Duration) domain.FisherUsecase {
 	return &fisherUsecase{
 		fisherRepo:     f,

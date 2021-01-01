@@ -31,6 +31,7 @@ type UpdateRequest struct {
 func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
 	handler := &BuyerHandler{BUsecase: uc}
 	router.HandleFunc("/buyer", handler.Fetch).Methods("GET")
+	router.HandleFunc("/buyer/inquiry", handler.Inquiry).Methods("GET")
 	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/buyer", handler.Store).Methods("POST")
 	router.HandleFunc("/buyer/{id}", handler.Update).Methods("PUT")
@@ -183,6 +184,25 @@ func (h *BuyerHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to delete buyer data"
+	}
+
+	helper.SetResponse(res, req, response)
+}
+
+func (h *BuyerHandler) Inquiry(res http.ResponseWriter, req *http.Request) {
+
+	response := _response.New()
+
+	ctx := req.Context()
+	listBuyer, err := h.BUsecase.Inquiry(ctx)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to inquiry buyer data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to inquiry buyer data"
+		response.Data = listBuyer
 	}
 
 	helper.SetResponse(res, req, response)
