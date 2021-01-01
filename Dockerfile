@@ -1,5 +1,5 @@
 # Builder
-FROM golang:1.15.6-alpine3.12 as builder
+FROM golang:1.15
 
 RUN apk update && apk upgrade && \
     apk --update add git make
@@ -7,6 +7,9 @@ RUN apk update && apk upgrade && \
 WORKDIR /app
 
 COPY . .
+
+RUN go get github.com/rs/cors
+RUN go install -v ./...
 
 RUN make engine
 

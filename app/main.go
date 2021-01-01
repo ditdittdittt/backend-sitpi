@@ -92,8 +92,7 @@ func main() {
 	buyerUsecase := _buyerUsecase.NewBuyerUsecase(buyerRepo, timeoutContext)
 	_buyerHttpDelivery.NewBuyerHandler(r, buyerUsecase)
 
-	c := cors.New(cors.Options{AllowedOrigins: []string{"http://localhost:3000"}, AllowCredentials: true})
-	handler := c.Handler(r)
+	handler := cors.Default().Handler(r)
 
 	_ = http.ListenAndServe(viper.GetString("server.address"), handler)
 }
