@@ -24,6 +24,9 @@ import (
 	_transactionHttpDelivery "github.com/ditdittdittt/backend-sitpi/transaction/delivery/http"
 	_transactionRepo "github.com/ditdittdittt/backend-sitpi/transaction/repository/mysql"
 	_transactionUsecase "github.com/ditdittdittt/backend-sitpi/transaction/usecase"
+	_weightUnitHttpDelivery "github.com/ditdittdittt/backend-sitpi/weightUnit/delivery/http"
+	_weightUnitRepo "github.com/ditdittdittt/backend-sitpi/weightUnit/repository/mysql"
+	_weightUnitUsecase "github.com/ditdittdittt/backend-sitpi/weightUnit/usecase"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -105,6 +108,10 @@ func main() {
 	fishingGearRepo := _fishingGearRepo.NewMysqlFishingGearRepository(dbConn)
 	fishingGearusecase := _fishingGearUsecase.NewFishingGearUsecase(fishingGearRepo, timeoutContext)
 	_fishingGearHttpDelivery.NewFishingGearHandler(r, fishingGearusecase)
+
+	weightUnitRepo := _weightUnitRepo.NewMysqlWeightUnitRepository(dbConn)
+	weightUnitUsecase := _weightUnitUsecase.NewWeightUnitUsecase(weightUnitRepo, timeoutContext)
+	_weightUnitHttpDelivery.NewWeightUnitHandler(r, weightUnitUsecase)
 
 	handler := cors.Default().Handler(r)
 	c := cors.New(cors.Options{AllowedMethods: []string{"POST", "GET", "DELETE", "PUT"}})
