@@ -87,6 +87,18 @@ func (uc *auctionUsecase) Delete(ctx context.Context, id int64) (err error) {
 	return
 }
 
+func (uc *auctionUsecase) Inquiry(ctx context.Context) (res []domain.Auction, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	res, err = uc.auctionRepo.Inquiry(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
 func NewAuctionUsecase(a domain.AuctionRepository, timeout time.Duration) domain.AuctionUsecase {
 	return &auctionUsecase{
 		auctionRepo:    a,
