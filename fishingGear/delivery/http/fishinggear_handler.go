@@ -57,7 +57,7 @@ func (h *FishingGearHandler) GetByID(res http.ResponseWriter, req *http.Request)
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	buyer, err := h.FGUsecase.GetByID(ctx, id)
+	fishingGear, err := h.FGUsecase.GetByID(ctx, id)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to get by ID fishing gear data"
@@ -65,7 +65,7 @@ func (h *FishingGearHandler) GetByID(res http.ResponseWriter, req *http.Request)
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to get by id fishing gear data"
-		response.Data = buyer
+		response.Data = fishingGear
 	}
 
 	helper.SetResponse(res, req, response)
