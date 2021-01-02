@@ -79,7 +79,6 @@ func (m *mysqlAcutionRepository) inquiry(ctx context.Context, query string, args
 		r := domain.Auction{}
 		err = rows.Scan(
 			&r.ID,
-			&r.CaughtFishID,
 			&r.Weight,
 			&r.WeightUnit,
 			&r.CreatedAt,
@@ -235,14 +234,14 @@ func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (er
 }
 
 func (m *mysqlAcutionRepository) Inquiry(ctx context.Context) (res []domain.Auction, err error) {
-	query := `SELECT a.id, a.caught_fish_id, a.weight, a.weight_unit, a.created_at, a.updated_at, ft.name
+	query := `SELECT a.id, a.weight, a.weight_unit, a.created_at, a.updated_at, ft.name
 		FROM auction AS a
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		WHERE a.status = 1
 		ORDER BY a.created_at`
 
-	res, err = m.fetch(ctx, query)
+	res, err = m.inquiry(ctx, query)
 	if err != nil {
 		return nil, err
 	}

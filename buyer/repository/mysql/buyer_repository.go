@@ -187,7 +187,7 @@ func (m *mysqlBuyerRepository) Delete(ctx context.Context, id int64) (err error)
 func (m *mysqlBuyerRepository) Inquiry(ctx context.Context) (res []domain.Buyer, err error) {
 	query := `SELECT id, name, nik, created_at, updated_at FROM buyer`
 
-	res, err = m.fetch(ctx, query)
+	res, err = m.inquiry(ctx, query)
 	if err != nil {
 		return nil, err
 	}
