@@ -12,6 +12,9 @@ import (
 	_caughtFishHttpDelivery "github.com/ditdittdittt/backend-sitpi/caughtFish/delivery/http"
 	_caughtFishRepo "github.com/ditdittdittt/backend-sitpi/caughtFish/repository/mysql"
 	_caughtFishUsecase "github.com/ditdittdittt/backend-sitpi/caughtFish/usecase"
+	_fishTypeHttpDelivery "github.com/ditdittdittt/backend-sitpi/fishType/delivery/http"
+	_fishTypeRepo "github.com/ditdittdittt/backend-sitpi/fishType/repository/msyql"
+	_fishTypeUsecase "github.com/ditdittdittt/backend-sitpi/fishType/usecase"
 	_fisherHttpDelivery "github.com/ditdittdittt/backend-sitpi/fisher/delivery/http"
 	_fisherRepo "github.com/ditdittdittt/backend-sitpi/fisher/repository/mysql"
 	_fisherUsecase "github.com/ditdittdittt/backend-sitpi/fisher/usecase"
@@ -91,6 +94,10 @@ func main() {
 	buyerRepo := _buyerRepo.NewMysqlBuyerRepository(dbConn)
 	buyerUsecase := _buyerUsecase.NewBuyerUsecase(buyerRepo, timeoutContext)
 	_buyerHttpDelivery.NewBuyerHandler(r, buyerUsecase)
+
+	fishTypeRepo := _fishTypeRepo.NewMysqlFishTypeRepository(dbConn)
+	fishTypeUsecase := _fishTypeUsecase.NewFishTypeUsecase(fishTypeRepo, timeoutContext)
+	_fishTypeHttpDelivery.NewFishTypeHandler(r, fishTypeUsecase)
 
 	handler := cors.Default().Handler(r)
 	c := cors.New(cors.Options{AllowedMethods: []string{"POST", "GET", "DELETE", "PUT"}})
