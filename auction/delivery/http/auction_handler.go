@@ -28,6 +28,7 @@ type UpdateRequest struct {
 func NewAuctionHandler(router *mux.Router, uc domain.AuctionUsecase) {
 	handler := &AuctionHandler{AUsecase: uc}
 	router.HandleFunc("/auction", handler.FetchAuction).Methods("GET")
+	router.HandleFunc("/auction/inquiry", handler.Inquiry).Methods("GET")
 	router.HandleFunc("/auction/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/auction", handler.Store).Methods("POST")
 	router.HandleFunc("/auction/{id}", handler.Update).Methods("PUT")
@@ -174,6 +175,24 @@ func (h *AuctionHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to delete auction data"
+	}
+
+	helper.SetResponse(res, req, response)
+}
+
+func (h *AuctionHandler) Inquiry(res http.ResponseWriter, req *http.Request) {
+	response := _response.New()
+
+	ctx := req.Context()
+	listAuction, err := h.AUsecase.Inquiry(ctx)
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to inquiry auction data"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to inquiry auction data"
+		response.Data = listAuction
 	}
 
 	helper.SetResponse(res, req, response)

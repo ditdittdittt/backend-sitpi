@@ -59,6 +59,45 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 	return result, nil
 }
 
+func (m *mysqlAcutionRepository) inquiry(ctx context.Context, query string, args ...interface{}) (result []domain.Auction, err error) {
+
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	result = make([]domain.Auction, 0)
+	for rows.Next() {
+		r := domain.Auction{}
+		err = rows.Scan(
+			&r.ID,
+			&r.CaughtFishID,
+			&r.Weight,
+			&r.WeightUnit,
+			&r.CreatedAt,
+			&r.UpdatedAt,
+			&r.FishType,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		result = append(result, r)
+	}
+
+	return result, nil
+}
+
 func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auction, err error) {
 	query := `SELECT a.id, a.tpi_id, a.officer_id, a.caught_fish_id, a.weight, a.weight_unit, a.status, a.created_at, a.updated_at, f.name, ft.name, s.status
 		FROM auction AS a
@@ -190,6 +229,22 @@ func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (er
 	if rowsAffected != 1 {
 		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", rowsAffected)
 		return
+	}
+
+	return
+}
+
+func (m *mysqlAcutionRepository) Inquiry(ctx context.Context) (res []domain.Auction, err error) {
+	query := `SELECT a.id, a.caught_fish_id, a.weight, a.weight_unit, a.created_at, a.updated_at, ft.name
+		FROM auction AS a
+		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
+		WHERE a.status = 1
+		ORDER BY a.created_at`
+
+	res, err = m.fetch(ctx, query)
+	if err != nil {
+		return nil, err
 	}
 
 	return
