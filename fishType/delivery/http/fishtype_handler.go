@@ -57,7 +57,7 @@ func (h *FishTypeHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	buyer, err := h.FTUsecase.GetByID(ctx, id)
+	fishType, err := h.FTUsecase.GetByID(ctx, id)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to get by ID fish type data"
@@ -65,7 +65,7 @@ func (h *FishTypeHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to get by id fish type data"
-		response.Data = buyer
+		response.Data = fishType
 	}
 
 	helper.SetResponse(res, req, response)

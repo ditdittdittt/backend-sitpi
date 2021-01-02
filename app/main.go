@@ -13,7 +13,7 @@ import (
 	_caughtFishRepo "github.com/ditdittdittt/backend-sitpi/caughtFish/repository/mysql"
 	_caughtFishUsecase "github.com/ditdittdittt/backend-sitpi/caughtFish/usecase"
 	_fishTypeHttpDelivery "github.com/ditdittdittt/backend-sitpi/fishType/delivery/http"
-	_fishTypeRepo "github.com/ditdittdittt/backend-sitpi/fishType/repository/msyql"
+	_fishTypeRepo "github.com/ditdittdittt/backend-sitpi/fishType/repository/mysql"
 	_fishTypeUsecase "github.com/ditdittdittt/backend-sitpi/fishType/usecase"
 	_fisherHttpDelivery "github.com/ditdittdittt/backend-sitpi/fisher/delivery/http"
 	_fisherRepo "github.com/ditdittdittt/backend-sitpi/fisher/repository/mysql"
