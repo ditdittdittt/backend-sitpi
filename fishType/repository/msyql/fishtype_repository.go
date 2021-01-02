@@ -81,7 +81,7 @@ func (m *mysqlFishTypeRepository) GetByID(ctx context.Context, id int64) (res do
 }
 
 func (m *mysqlFishTypeRepository) Update(ctx context.Context, ft *domain.FishType) (err error) {
-	query := `UPDATE fish_type SET name=?, created_at=?, update_at=? WHERE ID = ?`
+	query := `UPDATE fish_type SET name=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

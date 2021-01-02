@@ -68,6 +68,8 @@ func (uc *fishTypeUsecase) Store(ctx context.Context, ft *domain.FishType) (err 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	ft.CreatedAt = time.Now()
+	ft.UpdatedAt = time.Now()
 	err = uc.fishTypeRepo.Store(ctx, ft)
 	return
 }
