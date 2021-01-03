@@ -6,10 +6,25 @@ import (
 	"time"
 )
 
+const (
+	layoutISO = "2006-01-02"
+)
+
 type caughtFishUsecase struct {
 	caughtFishRepo domain.CaughtFishRepository
 	auctionRepo    domain.AuctionRepository
 	contextTimeout time.Duration
+}
+
+func (uc *caughtFishUsecase) GetTotalProduction(ctx context.Context, from string, to string) (totalProduction float64, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	timestampFrom, err := time.Parse(layoutISO, from)
+	timestampTo, err := time.Parse(layoutISO, to)
+
+	totalProduction, err = uc.caughtFishRepo.GetTotalProduction(ctx, timestampFrom, timestampTo)
+	return
 }
 
 func (uc *caughtFishUsecase) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {

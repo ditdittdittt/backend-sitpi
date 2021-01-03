@@ -27,6 +27,11 @@ type StoreRequest struct {
 	AuctionWeightUnitID int64   `json:"auction_weight_unit_id"`
 }
 
+type GetTotalProductionRequest struct {
+	From string `json:"from"`
+	To   string `json:"to"`
+}
+
 type UpdateRequest struct {
 	FisherID      int64   `json:"fisher_id" validate:"required"`
 	FishTypeID    int64   `json:"fish_type_id" validate:"required"`
@@ -39,6 +44,7 @@ type UpdateRequest struct {
 func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
 	handler := &CaughtFishHandler{CFUsecase: uc}
 	router.HandleFunc("/caught_fish", handler.FetchCaughtFish).Methods("GET")
+	router.HandleFunc("/caught_fish/total_production", handler.GetTotalProduction).Methods("GET")
 	router.HandleFunc("/caught_fish/{id}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/caught_fish", handler.Store).Methods("POST")
 	router.HandleFunc("/caught_fish/{id}", handler.Update).Methods("PUT")
@@ -223,6 +229,36 @@ func (h *CaughtFishHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to delete caught fish data"
+	}
+
+	helper.SetResponse(res, req, response)
+}
+
+func (h *CaughtFishHandler) GetTotalProduction(res http.ResponseWriter, req *http.Request) {
+	response := _response.New()
+
+	fromParam := req.URL.Query()["from"]
+	if len(fromParam) == 0 || fromParam[0] == "" {
+		response.Code = "XX"
+		response.Desc = "Missing from parameter"
+	}
+
+	toParam := req.URL.Query()["to"]
+	if len(toParam) == 0 || toParam[0] == "" {
+		response.Code = "XX"
+		response.Desc = "Missing to parameter"
+	}
+
+	ctx := req.Context()
+	totalProduction, err := h.CFUsecase.GetTotalProduction(ctx, fromParam[0], toParam[0])
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to get total production caught fish"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to get total production caught fish"
+		response.Data = totalProduction
 	}
 
 	helper.SetResponse(res, req, response)

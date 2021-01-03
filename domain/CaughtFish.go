@@ -26,6 +26,8 @@ type CaughtFish struct {
 	FisherName  string `json:"fisher_name,omitempty"`
 	FisherNik   string `json:"fisher_nik,omitempty"`
 	FishType    string `json:"fish_type,omitempty"`
+
+	TotalProduction float64 `json:"total_production,omitempty"`
 }
 
 type CaughtFishUsecase interface {
@@ -34,6 +36,7 @@ type CaughtFishUsecase interface {
 	Update(ctx context.Context, c *CaughtFish) (err error)
 	Store(ctx context.Context, c *CaughtFish, a *Auction) (err error)
 	Delete(ctx context.Context, id int64) (err error)
+	GetTotalProduction(ctx context.Context, from string, to string) (totalProduction float64, err error)
 }
 
 type CaughtFishRepository interface {
@@ -42,4 +45,5 @@ type CaughtFishRepository interface {
 	Update(ctx context.Context, c *CaughtFish) (err error)
 	Store(ctx context.Context, c *CaughtFish) (lastID int64, err error)
 	Delete(ctx context.Context, id int64) (err error)
+	GetTotalProduction(ctx context.Context, from time.Time, to time.Time) (totalProduction float64, err error)
 }
