@@ -11,19 +11,21 @@ type CaughtFish struct {
 	TpiID     int64 `json:"tpi_id"`
 	OfficerID int64 `json:"officer_id"`
 
-	FisherID    int64   `json:"fisher_id"`
-	FishTypeID  int64   `json:"fish_type_id"`
-	Weight      float64 `json:"weight"`
-	WeightUnit  string  `json:"weight_unit"`
-	FishingGear string  `json:"fishing_gear"`
-	FishingArea string  `json:"fishing_area"`
+	FisherID      int64   `json:"fisher_id"`
+	FishTypeID    int64   `json:"fish_type_id"`
+	WeightUnitID  int64   `json:"weight_unit_id"`
+	FishingGearID int64   `json:"fishing_gear_id"`
+	Weight        float64 `json:"weight"`
+	FishingArea   string  `json:"fishing_area"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	FisherName string `json:"fisher_name,omitempty"`
-	FisherNik  string `json:"fisher_nik,omitempty"`
-	FishType   string `json:"fish_type,omitempty"`
+	WeightUnit  string `json:"weight_unit,omitempty"`
+	FishingGear string `json:"fishing_gear,omitempty"`
+	FisherName  string `json:"fisher_name,omitempty"`
+	FisherNik   string `json:"fisher_nik,omitempty"`
+	FishType    string `json:"fish_type,omitempty"`
 }
 
 type CaughtFishUsecase interface {

@@ -16,24 +16,24 @@ type CaughtFishHandler struct {
 }
 
 type StoreRequest struct {
-	FisherID    int64   `json:"fisher_id" validate:"required"`
-	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
-	Weight      float64 `json:"weight" validate:"required"`
-	WeightUnit  string  `json:"weight_unit" validate:"required"`
-	FishingGear string  `json:"fishing_gear" validate:"required"`
-	FishingArea string  `json:"fishing_area" validate:"required"`
+	FisherID      int64   `json:"fisher_id" validate:"required"`
+	FishTypeID    int64   `json:"fish_type_id" validate:"required"`
+	Weight        float64 `json:"weight" validate:"required"`
+	WeightUnitID  int64   `json:"weight_unit_id" validate:"required"`
+	FishingGearID int64   `json:"fishing_gear_id" validate:"required"`
+	FishingArea   string  `json:"fishing_area" validate:"required"`
 
-	AuctionWeight     float64 `json:"auction_weight"`
-	AuctionWeightUnit string  `json:"auction_weight_unit"`
+	AuctionWeight       float64 `json:"auction_weight"`
+	AuctionWeightUnitID int64   `json:"auction_weight_unit_id"`
 }
 
 type UpdateRequest struct {
-	FisherID    int64   `json:"fisher_id" validate:"required"`
-	FishTypeID  int64   `json:"fish_type_id" validate:"required"`
-	Weight      float64 `json:"weight" validate:"required"`
-	WeightUnit  string  `json:"weight_unit" validate:"required"`
-	FishingGear string  `json:"fishing_gear" validate:"required"`
-	FishingArea string  `json:"fishing_area" validate:"required"`
+	FisherID      int64   `json:"fisher_id" validate:"required"`
+	FishTypeID    int64   `json:"fish_type_id" validate:"required"`
+	Weight        float64 `json:"weight" validate:"required"`
+	WeightUnitID  int64   `json:"weight_unit_id" validate:"required"`
+	FishingGearID int64   `json:"fishing_gear_id" validate:"required"`
+	FishingArea   string  `json:"fishing_area" validate:"required"`
 }
 
 func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
@@ -121,17 +121,17 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	caughtFish := &domain.CaughtFish{
-		FisherID:    request.FisherID,
-		FishTypeID:  request.FishTypeID,
-		Weight:      request.Weight,
-		WeightUnit:  request.WeightUnit,
-		FishingGear: request.FishingGear,
-		FishingArea: request.FishingArea,
+		FisherID:      request.FisherID,
+		FishTypeID:    request.FishTypeID,
+		Weight:        request.Weight,
+		WeightUnitID:  request.WeightUnitID,
+		FishingGearID: request.FishingGearID,
+		FishingArea:   request.FishingArea,
 	}
 
 	auction := &domain.Auction{
-		Weight:     request.AuctionWeight,
-		WeightUnit: request.AuctionWeightUnit,
+		Weight:       request.AuctionWeight,
+		WeightUnitID: request.AuctionWeightUnitID,
 	}
 
 	err = h.CFUsecase.Store(ctx, caughtFish, auction)
@@ -186,13 +186,13 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 	caughtFish := &domain.CaughtFish{
-		ID:          id,
-		FisherID:    request.FisherID,
-		FishTypeID:  request.FishTypeID,
-		Weight:      request.Weight,
-		WeightUnit:  request.WeightUnit,
-		FishingGear: request.FishingGear,
-		FishingArea: request.FishingArea,
+		ID:            id,
+		FisherID:      request.FisherID,
+		FishTypeID:    request.FishTypeID,
+		Weight:        request.Weight,
+		WeightUnitID:  request.WeightUnitID,
+		FishingGearID: request.FishingGearID,
+		FishingArea:   request.FishingArea,
 	}
 	err = h.CFUsecase.Update(ctx, caughtFish)
 

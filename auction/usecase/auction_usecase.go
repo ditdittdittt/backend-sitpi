@@ -63,6 +63,8 @@ func (uc *auctionUsecase) Store(ctx context.Context, a *domain.Auction) (err err
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
+	a.TpiID = 1
+	a.OfficerID = 1
 	a.Status = 1
 	a.CreatedAt = time.Now()
 	a.UpdatedAt = time.Now()

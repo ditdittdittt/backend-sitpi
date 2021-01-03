@@ -11,14 +11,15 @@ type Auction struct {
 	TpiID        int64 `json:"tpi_id,omitempty"`
 	OfficerID    int64 `json:"officer_id,omitempty"`
 	CaughtFishID int64 `json:"caught_fish_id,omitempty"`
+	WeightUnitID int64 `json:"weight_unit_id,omitempty"`
 
-	Weight     float64 `json:"weight,omitempty"`
-	WeightUnit string  `json:"weight_unit,omitempty"`
-	Status     int     `json:"status,omitempty"`
+	Weight float64 `json:"weight,omitempty"`
+	Status int     `json:"status,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
+	WeightUnit string `json:"weight_unit,omitempty"`
 	FisherName string `json:"fisher_name,omitempty"`
 	FishType   string `json:"fish_type,omitempty"`
 	StatusName string `json:"status_name,omitempty"`
