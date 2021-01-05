@@ -32,10 +32,11 @@ type UpdateRequest struct {
 func NewTransactionHandler(router *mux.Router, uc domain.TransactionUsecase) {
 	handler := &TransactionHandler{TUsecase: uc}
 	router.HandleFunc("/transaction", handler.FetchTransaction).Methods("GET")
-	router.HandleFunc("/transaction/{id}", handler.GetByID).Methods("GET")
+	router.HandleFunc("/transaction/total_buyer", handler.GetTotalBuyer).Methods("GET")
+	router.HandleFunc("/transaction/{id:[0-9]+}", handler.GetByID).Methods("GET")
 	router.HandleFunc("/transaction", handler.Store).Methods("POST")
-	router.HandleFunc("/transaction/{id}", handler.Update).Methods("PUT")
-	router.HandleFunc("/transaction/{id}", handler.Delete).Methods("DELETE")
+	router.HandleFunc("/transaction/{id:[0-9]+}", handler.Update).Methods("PUT")
+	router.HandleFunc("/transaction/{id:[0-9]+}", handler.Delete).Methods("DELETE")
 }
 
 func (h *TransactionHandler) FetchTransaction(res http.ResponseWriter, req *http.Request) {
@@ -182,6 +183,40 @@ func (h *TransactionHandler) Delete(res http.ResponseWriter, req *http.Request) 
 	} else {
 		response.Code = "00"
 		response.Desc = "Success to delete transaction data"
+	}
+
+	helper.SetResponse(res, req, response)
+}
+
+func (h *TransactionHandler) GetTotalBuyer(res http.ResponseWriter, req *http.Request) {
+	response := _response.New()
+
+	fromParam := req.URL.Query()["from"]
+	if len(fromParam) == 0 {
+		response.Code = "XX"
+		response.Desc = "Missing from parameter"
+		helper.SetResponse(res, req, response)
+		return
+	}
+
+	toParam := req.URL.Query()["to"]
+	if len(toParam) == 0 {
+		response.Code = "XX"
+		response.Desc = "Missing to parameter"
+		helper.SetResponse(res, req, response)
+		return
+	}
+
+	ctx := req.Context()
+	totalFisher, err := h.TUsecase.GetTotalBuyer(ctx, fromParam[0], toParam[0])
+	if err != nil {
+		response.Code = "XX"
+		response.Desc = "Failed to get total fisher caught fish"
+		response.Data = err.Error()
+	} else {
+		response.Code = "00"
+		response.Desc = "Success to get total fisher caught fish"
+		response.Data = totalFisher
 	}
 
 	helper.SetResponse(res, req, response)

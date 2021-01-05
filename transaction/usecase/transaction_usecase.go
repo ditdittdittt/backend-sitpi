@@ -6,10 +6,38 @@ import (
 	"time"
 )
 
+const (
+	layoutISO = "2006-01-02"
+)
+
 type transactionUsecase struct {
 	transactionRepo domain.TransactionRepository
 	auctionRepo     domain.AuctionRepository
 	contextTimeout  time.Duration
+}
+
+func (uc *transactionUsecase) GetTotalBuyer(ctx context.Context, from string, to string) (totalBuyer int, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	timestampFrom, err := time.Parse(layoutISO, from)
+	if err != nil {
+		return 0, err
+	}
+
+	timestampTo, err := time.Parse(layoutISO, to)
+	if err != nil {
+		return 0, err
+	}
+	timestampTo = timestampTo.Add(24 * time.Hour)
+
+	transaction, err := uc.transactionRepo.GetTotalBuyer(ctx, timestampFrom, timestampTo)
+	if err != nil {
+		return 0, err
+	}
+
+	totalBuyer = transaction.TotalBuyer
+	return
 }
 
 func (uc *transactionUsecase) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
