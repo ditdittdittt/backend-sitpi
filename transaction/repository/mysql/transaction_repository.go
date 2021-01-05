@@ -6,10 +6,43 @@ import (
 	"fmt"
 	"github.com/ditdittdittt/backend-sitpi/domain"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type mysqlTransactionRepository struct {
 	Conn *sql.DB
+}
+
+func (m *mysqlTransactionRepository) getTotalBuyer(ctx context.Context, query string, args ...interface{}) (result []domain.Transaction, err error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	result = make([]domain.Transaction, 0)
+	for rows.Next() {
+		c := domain.Transaction{}
+		err = rows.Scan(
+			&c.TotalBuyer,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		result = append(result, c)
+	}
+
+	return result, nil
 }
 
 func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.Transaction, err error) {
@@ -167,6 +200,25 @@ func (m *mysqlTransactionRepository) Delete(ctx context.Context, id int64) (err 
 	if rowsAfected != 1 {
 		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", rowsAfected)
 		return
+	}
+
+	return
+}
+
+func (m *mysqlTransactionRepository) GetTotalBuyer(ctx context.Context, from time.Time, to time.Time) (res domain.Transaction, err error) {
+	query := `SELECT COUNT(DISTINCT t.buyer_id)
+			FROM transaction AS t
+			WHERE t.created_at BETWEEN ? AND ?`
+
+	list, err := m.getTotalBuyer(ctx, query, from, to)
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return res, domain.ErrNotFound
 	}
 
 	return

@@ -24,6 +24,8 @@ type Transaction struct {
 	FishType   string  `json:"fish_type,omitempty"`
 	Weight     float64 `json:"weight,omitempty"`
 	WeightUnit string  `json:"weight_unit,omitempty"`
+
+	TotalBuyer int `json:"total_buyer,omitempty"`
 }
 
 type TransactionUsecase interface {
@@ -32,6 +34,7 @@ type TransactionUsecase interface {
 	Update(ctx context.Context, t *Transaction) (err error)
 	Store(ctx context.Context, t *Transaction) (err error)
 	Delete(ctx context.Context, id int64) (err error)
+	GetTotalBuyer(ctx context.Context, from string, to string) (totalBuyer int, err error)
 }
 
 type TransactionRepository interface {
@@ -40,4 +43,5 @@ type TransactionRepository interface {
 	Update(ctx context.Context, t *Transaction) (err error)
 	Store(ctx context.Context, t *Transaction) (err error)
 	Delete(ctx context.Context, id int64) (err error)
+	GetTotalBuyer(ctx context.Context, from time.Time, to time.Time) (res Transaction, err error)
 }
