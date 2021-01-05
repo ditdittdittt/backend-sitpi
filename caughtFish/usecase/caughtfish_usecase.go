@@ -6,10 +6,62 @@ import (
 	"time"
 )
 
+const (
+	layoutISO = "2006-01-02"
+)
+
 type caughtFishUsecase struct {
 	caughtFishRepo domain.CaughtFishRepository
 	auctionRepo    domain.AuctionRepository
 	contextTimeout time.Duration
+}
+
+func (uc *caughtFishUsecase) GetTotalFisher(ctx context.Context, from string, to string) (totalFisher int, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	timestampFrom, err := time.Parse(layoutISO, from)
+	if err != nil {
+		return 0, err
+	}
+
+	timestampTo, err := time.Parse(layoutISO, to)
+	if err != nil {
+		return 0, err
+	}
+	timestampTo = timestampTo.Add(24 * time.Hour)
+
+	caughtFish, err := uc.caughtFishRepo.GetTotalFisher(ctx, timestampFrom, timestampTo)
+	if err != nil {
+		return 0, err
+	}
+
+	totalFisher = caughtFish.TotalFisher
+	return
+}
+
+func (uc *caughtFishUsecase) GetTotalProduction(ctx context.Context, from string, to string) (totalProduction float64, err error) {
+	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
+	defer cancel()
+
+	timestampFrom, err := time.Parse(layoutISO, from)
+	if err != nil {
+		return 0, err
+	}
+
+	timestampTo, err := time.Parse(layoutISO, to)
+	if err != nil {
+		return 0, err
+	}
+	timestampTo = timestampTo.Add(24 * time.Hour)
+
+	caughtFish, err := uc.caughtFishRepo.GetTotalProduction(ctx, timestampFrom, timestampTo)
+	if err != nil {
+		return 0, err
+	}
+
+	totalProduction = caughtFish.TotalProduction
+	return
 }
 
 func (uc *caughtFishUsecase) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {

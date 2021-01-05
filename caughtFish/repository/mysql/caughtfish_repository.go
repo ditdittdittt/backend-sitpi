@@ -6,14 +6,11 @@ import (
 	"fmt"
 	"github.com/ditdittdittt/backend-sitpi/domain"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type mysqlCaughtFishRepository struct {
 	Conn *sql.DB
-}
-
-func NewMysqlCaughtFishRepository(Conn *sql.DB) domain.CaughtFishRepository {
-	return &mysqlCaughtFishRepository{Conn: Conn}
 }
 
 func (m *mysqlCaughtFishRepository) fetch(ctx context.Context, query string, args ...interface{}) (result []domain.CaughtFish, err error) {
@@ -50,6 +47,70 @@ func (m *mysqlCaughtFishRepository) fetch(ctx context.Context, query string, arg
 			&c.FisherName,
 			&c.FisherNik,
 			&c.FishType,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		result = append(result, c)
+	}
+
+	return result, nil
+}
+
+func (m *mysqlCaughtFishRepository) getTotalProduction(ctx context.Context, query string, args ...interface{}) (result []domain.CaughtFish, err error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	result = make([]domain.CaughtFish, 0)
+	for rows.Next() {
+		c := domain.CaughtFish{}
+		err = rows.Scan(
+			&c.TotalProduction,
+		)
+
+		if err != nil {
+			logrus.Error(err)
+			return nil, err
+		}
+
+		result = append(result, c)
+	}
+
+	return result, nil
+}
+
+func (m *mysqlCaughtFishRepository) getTotalFisher(ctx context.Context, query string, args ...interface{}) (result []domain.CaughtFish, err error) {
+	rows, err := m.Conn.QueryContext(ctx, query, args...)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+
+	defer func() {
+		errRow := rows.Close()
+		if errRow != nil {
+			logrus.Error(errRow)
+		}
+	}()
+
+	result = make([]domain.CaughtFish, 0)
+	for rows.Next() {
+		c := domain.CaughtFish{}
+		err = rows.Scan(
+			&c.TotalFisher,
 		)
 
 		if err != nil {
@@ -172,4 +233,52 @@ func (m *mysqlCaughtFishRepository) Delete(ctx context.Context, id int64) (err e
 	}
 
 	return
+}
+
+func (m *mysqlCaughtFishRepository) GetTotalProduction(ctx context.Context, from time.Time, to time.Time) (res domain.CaughtFish, err error) {
+	query := `SELECT SUM(
+    		CASE
+ 			WHEN cf.weight_unit_id = 1 THEN cf.weight * 1000
+ 			WHEN cf.weight_unit_id = 2 THEN cf.weight * 100
+    		WHEN cf.weight_unit_id = 3 THEN cf.weight * 1
+ 			END) AS total
+			FROM caught_fish AS cf
+			INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
+			WHERE cf.created_at BETWEEN ? AND ?`
+
+	list, err := m.getTotalProduction(ctx, query, from, to)
+	if err != nil {
+		return domain.CaughtFish{}, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return res, domain.ErrNotFound
+	}
+
+	return
+}
+
+func (m *mysqlCaughtFishRepository) GetTotalFisher(ctx context.Context, from time.Time, to time.Time) (res domain.CaughtFish, err error) {
+	query := `SELECT COUNT(DISTINCT cf.fisher_id)
+			FROM caught_fish AS cf
+			WHERE cf.created_at BETWEEN ? AND ?`
+
+	list, err := m.getTotalFisher(ctx, query, from, to)
+	if err != nil {
+		return domain.CaughtFish{}, err
+	}
+
+	if len(list) > 0 {
+		res = list[0]
+	} else {
+		return res, domain.ErrNotFound
+	}
+
+	return
+}
+
+func NewMysqlCaughtFishRepository(Conn *sql.DB) domain.CaughtFishRepository {
+	return &mysqlCaughtFishRepository{Conn: Conn}
 }
