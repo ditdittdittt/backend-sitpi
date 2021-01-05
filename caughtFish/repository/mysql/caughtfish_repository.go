@@ -236,12 +236,13 @@ func (m *mysqlCaughtFishRepository) Delete(ctx context.Context, id int64) (err e
 }
 
 func (m *mysqlCaughtFishRepository) GetTotalProduction(ctx context.Context, from time.Time, to time.Time) (res domain.CaughtFish, err error) {
-	query := `SELECT SUM(
-    		CASE
- 			WHEN cf.weight_unit_id = 1 THEN cf.weight * 1000
- 			WHEN cf.weight_unit_id = 2 THEN cf.weight * 100
-    		WHEN cf.weight_unit_id = 3 THEN cf.weight * 1
- 			END) AS total
+	query := `SELECT COALESCE(	
+				SUM(
+    			CASE
+ 				WHEN cf.weight_unit_id = 1 THEN cf.weight * 1000
+ 				WHEN cf.weight_unit_id = 2 THEN cf.weight * 100
+    			WHEN cf.weight_unit_id = 3 THEN cf.weight * 1
+ 				END), 0) AS total
 			FROM caught_fish AS cf
 			INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
 			WHERE cf.created_at BETWEEN ? AND ?`
