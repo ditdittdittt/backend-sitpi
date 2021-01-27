@@ -120,7 +120,7 @@ func (m *mysqlAcutionRepository) Fetch(ctx context.Context, from time.Time, to t
 }
 
 func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res domain.Auction, err error) {
-	query := `SELECT a.id, a.tpi_id, a.caught_fish_id, a.status_id, a.created_at, a.updated_at, f.name, ft.name, cf.weight, cf.weight_unit_id, s.status
+	query := `SELECT a.id, a.tpi_id, a.caught_fish_id, a.status_id, a.created_at, a.updated_at, f.name, ft.name, cf.weight, wu.unit, s.status
 		FROM auction AS a
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
