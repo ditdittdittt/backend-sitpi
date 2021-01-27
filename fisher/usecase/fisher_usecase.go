@@ -35,20 +35,50 @@ func (uc *fisherUsecase) GetByID(ctx context.Context, id int64) (res domain.Fish
 	return
 }
 
-func (uc *fisherUsecase) Update(ctx context.Context, f *domain.Fisher) (err error) {
+func (uc *fisherUsecase) Update(ctx context.Context, id int64, request *domain.UpdateFisherRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	f.UpdatedAt = time.Now()
-	err = uc.fisherRepo.Update(ctx, f)
+	existedFisher, err := uc.fisherRepo.GetByID(ctx, id)
+	if err != nil {
+		return
+	}
+	if existedFisher == (domain.Fisher{}) {
+		return domain.ErrNotFound
+	}
+
+	fisher := &domain.Fisher{
+		ID:        id,
+		UserID:    1,
+		Nik:       request.Nik,
+		Name:      request.Name,
+		Address:   request.Address,
+		ShipType:  request.ShipType,
+		AbkTotal:  request.AbkTotal,
+		CreatedAt: existedFisher.CreatedAt,
+		UpdatedAt: time.Now(),
+	}
+
+	err = uc.fisherRepo.Update(ctx, fisher)
 	return
 }
 
-func (uc *fisherUsecase) Store(ctx context.Context, f *domain.Fisher) (err error) {
+func (uc *fisherUsecase) Store(ctx context.Context, request *domain.StoreFisherRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	err = uc.fisherRepo.Store(ctx, f)
+	fisher := &domain.Fisher{
+		UserID:    1,
+		Nik:       request.Nik,
+		Name:      request.Name,
+		Address:   request.Address,
+		ShipType:  request.ShipType,
+		AbkTotal:  request.AbkTotal,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err = uc.fisherRepo.Store(ctx, fisher)
 	return
 }
 

@@ -36,11 +36,11 @@ func (uc *fishingGearUsecase) GetByID(ctx context.Context, id int64) (res domain
 	return
 }
 
-func (uc *fishingGearUsecase) Update(ctx context.Context, fg *domain.FishingGear) (err error) {
+func (uc *fishingGearUsecase) Update(ctx context.Context, id int64, request *domain.UpdateFishingGearRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	existedFishingGear, err := uc.fishingGearRepo.GetByID(ctx, fg.ID)
+	existedFishingGear, err := uc.fishingGearRepo.GetByID(ctx, id)
 
 	if err != nil {
 		return
@@ -49,20 +49,27 @@ func (uc *fishingGearUsecase) Update(ctx context.Context, fg *domain.FishingGear
 		return domain.ErrNotFound
 	}
 
-	fg.CreatedAt = existedFishingGear.CreatedAt
-	fg.UpdatedAt = time.Now()
+	fishingGear := &domain.FishingGear{
+		ID:        id,
+		Name:      request.Name,
+		CreatedAt: existedFishingGear.CreatedAt,
+		UpdatedAt: time.Now(),
+	}
 
-	err = uc.fishingGearRepo.Update(ctx, fg)
+	err = uc.fishingGearRepo.Update(ctx, fishingGear)
 	return
 }
 
-func (uc *fishingGearUsecase) Store(ctx context.Context, fg *domain.FishingGear) (err error) {
+func (uc *fishingGearUsecase) Store(ctx context.Context, request *domain.StoreFishingGearRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	fg.CreatedAt = time.Now()
-	fg.UpdatedAt = time.Now()
-	err = uc.fishingGearRepo.Store(ctx, fg)
+	fishingGear := &domain.FishingGear{
+		Name:      request.Name,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	err = uc.fishingGearRepo.Store(ctx, fishingGear)
 	return
 }
 

@@ -15,30 +15,9 @@ type CaughtFishHandler struct {
 	CFUsecase domain.CaughtFishUsecase
 }
 
-type StoreRequest struct {
-	FisherID      int64   `json:"fisher_id" validate:"required"`
-	FishTypeID    int64   `json:"fish_type_id" validate:"required"`
-	Weight        float64 `json:"weight" validate:"required"`
-	WeightUnitID  int64   `json:"weight_unit_id" validate:"required"`
-	FishingGearID int64   `json:"fishing_gear_id" validate:"required"`
-	FishingArea   string  `json:"fishing_area" validate:"required"`
-
-	AuctionWeight       float64 `json:"auction_weight"`
-	AuctionWeightUnitID int64   `json:"auction_weight_unit_id"`
-}
-
 type GetTotalProductionRequest struct {
 	From string `json:"from"`
 	To   string `json:"to"`
-}
-
-type UpdateRequest struct {
-	FisherID      int64   `json:"fisher_id" validate:"required"`
-	FishTypeID    int64   `json:"fish_type_id" validate:"required"`
-	Weight        float64 `json:"weight" validate:"required"`
-	WeightUnitID  int64   `json:"weight_unit_id" validate:"required"`
-	FishingGearID int64   `json:"fishing_gear_id" validate:"required"`
-	FishingArea   string  `json:"fishing_area" validate:"required"`
 }
 
 func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
@@ -55,8 +34,34 @@ func NewCaughtFishHandler(router *mux.Router, uc domain.CaughtFishUsecase) {
 func (h *CaughtFishHandler) FetchCaughtFish(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
+	fromParam := req.URL.Query()["from"]
+	if len(fromParam) == 0 {
+		fromParam = append(fromParam, "")
+	}
+
+	toParam := req.URL.Query()["to"]
+	if len(toParam) == 0 {
+		toParam = append(toParam, "")
+	}
+
+	fisherParam := req.URL.Query()["fisher_id"]
+	if len(fisherParam) == 0 {
+		fisherParam = append(fisherParam, "0")
+	}
+
+	fishTypeParam := req.URL.Query()["fish_type_id"]
+	if len(fishTypeParam) == 0 {
+		fishTypeParam = append(fishTypeParam, "0")
+	}
+
 	ctx := req.Context()
-	listCaughtFish, err := h.CFUsecase.Fetch(ctx)
+	request := &domain.FetchCaughtFishRequest{
+		From:       fromParam[0],
+		To:         toParam[0],
+		FisherID:   fisherParam[0],
+		FishTypeID: fishTypeParam[0],
+	}
+	listCaughtFish, err := h.CFUsecase.Fetch(ctx, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch caught fish data"
@@ -92,7 +97,7 @@ func (h *CaughtFishHandler) GetByID(res http.ResponseWriter, req *http.Request) 
 }
 
 func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
-	request := &StoreRequest{}
+	request := &domain.StoreCaughtFishRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -107,7 +112,6 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		response.Data = err.Error()
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
@@ -127,21 +131,7 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	caughtFish := &domain.CaughtFish{
-		FisherID:      request.FisherID,
-		FishTypeID:    request.FishTypeID,
-		Weight:        request.Weight,
-		WeightUnitID:  request.WeightUnitID,
-		FishingGearID: request.FishingGearID,
-		FishingArea:   request.FishingArea,
-	}
-
-	auction := &domain.Auction{
-		Weight:       request.AuctionWeight,
-		WeightUnitID: request.AuctionWeightUnitID,
-	}
-
-	err = h.CFUsecase.Store(ctx, caughtFish, auction)
+	err = h.CFUsecase.Store(ctx, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
@@ -155,7 +145,7 @@ func (h *CaughtFishHandler) Store(res http.ResponseWriter, req *http.Request) {
 }
 
 func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
-	request := &UpdateRequest{}
+	request := &domain.UpdateCaughtFishRequest{}
 	response := _response.New()
 
 	params := mux.Vars(req)
@@ -166,7 +156,6 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
-		logrus.Error(err)
 		helper.SetResponse(res, req, response)
 		return
 	}
@@ -176,7 +165,6 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
-		logrus.Error(err)
 		helper.SetResponse(res, req, response)
 		return
 	}
@@ -186,22 +174,12 @@ func (h *CaughtFishHandler) Update(res http.ResponseWriter, req *http.Request) {
 		response.Code = "XX"
 		response.Data = "Failed to store caught fish data"
 		response.Data = err.Error()
-		logrus.Error(err)
 		helper.SetResponse(res, req, response)
 		return
 	}
 
 	ctx := req.Context()
-	caughtFish := &domain.CaughtFish{
-		ID:            id,
-		FisherID:      request.FisherID,
-		FishTypeID:    request.FishTypeID,
-		Weight:        request.Weight,
-		WeightUnitID:  request.WeightUnitID,
-		FishingGearID: request.FishingGearID,
-		FishingArea:   request.FishingArea,
-	}
-	err = h.CFUsecase.Update(ctx, caughtFish)
+	err = h.CFUsecase.Update(ctx, id, request)
 
 	if err != nil {
 		response.Code = "XX"

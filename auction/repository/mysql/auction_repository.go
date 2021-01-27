@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ditdittdittt/backend-sitpi/domain"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 type mysqlAcutionRepository struct {
@@ -36,16 +37,14 @@ func (m *mysqlAcutionRepository) fetch(ctx context.Context, query string, args .
 		err = rows.Scan(
 			&r.ID,
 			&r.TpiID,
-			&r.OfficerID,
 			&r.CaughtFishID,
-			&r.WeightUnitID,
-			&r.Weight,
-			&r.Status,
+			&r.StatusID,
 			&r.CreatedAt,
 			&r.UpdatedAt,
-			&r.WeightUnit,
 			&r.FisherName,
 			&r.FishType,
+			&r.Weight,
+			&r.WeightUnit,
 			&r.StatusName,
 		)
 
@@ -80,7 +79,6 @@ func (m *mysqlAcutionRepository) inquiry(ctx context.Context, query string, args
 		r := domain.Auction{}
 		err = rows.Scan(
 			&r.ID,
-			&r.Weight,
 			&r.WeightUnit,
 			&r.CreatedAt,
 			&r.UpdatedAt,
@@ -98,17 +96,22 @@ func (m *mysqlAcutionRepository) inquiry(ctx context.Context, query string, args
 	return result, nil
 }
 
-func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auction, err error) {
-	query := `SELECT a.id, a.tpi_id, a.officer_id, a.caught_fish_id, a.weight_unit_id, a.weight, a.status, a.created_at, a.updated_at, wu.unit, f.name, ft.name, s.status
+func (m *mysqlAcutionRepository) Fetch(ctx context.Context, from time.Time, to time.Time, auctionID int64, fisherID int64, fishTypeID int64, statusID int64) (res []domain.Auction, err error) {
+	query := `SELECT a.id, a.tpi_id, a.caught_fish_id, a.status_id, a.created_at, a.updated_at, f.name, ft.name, cf.weight, wu.unit, s.status
 		FROM auction AS a
-		INNER JOIN weight_unit AS wu ON a.weight_unit_id=wu.id
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
-		INNER JOIN auction_status AS s ON a.status=s.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
+		INNER JOIN auction_status AS s ON a.status_id=s.id
+		WHERE a.created_at BETWEEN ? AND ?
+		AND a.id = IF (?=0, a.id, ?)
+		AND cf.fisher_id = IF (?=0, cf.fisher_id, ?)
+		AND cf.fish_type_id = IF (?=0, cf.fish_type_id, ?)
+		AND a.status_id = IF (?=0, a.status_id, ?)
 		ORDER BY a.created_at`
 
-	res, err = m.fetch(ctx, query)
+	res, err = m.fetch(ctx, query, from, to, auctionID, auctionID, fisherID, fisherID, fishTypeID, fishTypeID, statusID, statusID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,13 +120,13 @@ func (m *mysqlAcutionRepository) Fetch(ctx context.Context) (res []domain.Auctio
 }
 
 func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res domain.Auction, err error) {
-	query := `SELECT a.id, a.tpi_id, a.officer_id, a.caught_fish_id, a.weight_unit_id, a.weight, a.status, a.created_at, a.updated_at, wu.unit, f.name, ft.name, s.status
+	query := `SELECT a.id, a.tpi_id, a.caught_fish_id, a.status_id, a.created_at, a.updated_at, f.name, ft.name, cf.weight, cf.weight_unit_id, s.status
 		FROM auction AS a
-		INNER JOIN weight_unit AS wu ON a.weight_unit_id=wu.id
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
-		INNER JOIN auction_status AS s ON a.status=s.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
+		INNER JOIN auction_status AS s ON a.status_id=s.id
 		WHERE a.id = ?`
 
 	list, err := m.fetch(ctx, query, id)
@@ -140,38 +143,14 @@ func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res dom
 	return
 }
 
-func (m *mysqlAcutionRepository) Update(ctx context.Context, a *domain.Auction) (err error) {
-	query := `UPDATE auction SET tpi_id=?, officer_id=?, caught_fish_id=?,  weight_unit_id=?, weight=?, status=?, created_at=?, updated_at=? WHERE ID = ?`
-
-	stmt, err := m.Conn.PrepareContext(ctx, query)
-	if err != nil {
-		return
-	}
-
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.CaughtFishID, a.WeightUnitID, a.Weight, a.Status, a.CreatedAt, a.UpdatedAt, a.ID)
-	if err != nil {
-		return
-	}
-	affect, err := res.RowsAffected()
-	if err != nil {
-		return
-	}
-	if affect != 1 {
-		err = fmt.Errorf("Weird  Behavior. Total Affected: %d", affect)
-		return
-	}
-
-	return
-}
-
 func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (err error) {
-	query := `INSERT auction SET tpi_id=?, officer_id=?, caught_fish_id=?, weight_unit_id=?, weight=?, status=?, created_at=?, updated_at=?`
+	query := `INSERT auction SET tpi_id=?, caught_fish_id=?, status_id=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.OfficerID, a.CaughtFishID, a.WeightUnitID, a.Weight, a.Status, a.CreatedAt, a.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.CaughtFishID, a.StatusID, a.CreatedAt, a.UpdatedAt)
 	if err != nil {
 		return
 	}
@@ -211,7 +190,7 @@ func (m *mysqlAcutionRepository) Delete(ctx context.Context, id int64) (err erro
 }
 
 func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (err error) {
-	query := `UPDATE auction SET status=2 WHERE id=?`
+	query := `UPDATE auction SET status_id=2 WHERE id=?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

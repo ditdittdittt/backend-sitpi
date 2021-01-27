@@ -31,11 +31,13 @@ func (m *mysqlBuyerRepository) fetch(ctx context.Context, query string, args ...
 		r := domain.Buyer{}
 		err = rows.Scan(
 			&r.ID,
+			&r.UserID,
 			&r.Name,
 			&r.Nik,
 			&r.Address,
 			&r.CreatedAt,
 			&r.UpdatedAt,
+			&r.UserName,
 		)
 
 		if err != nil {
@@ -87,7 +89,10 @@ func (m *mysqlBuyerRepository) inquiry(ctx context.Context, query string, args .
 }
 
 func (m *mysqlBuyerRepository) Fetch(ctx context.Context) (res []domain.Buyer, err error) {
-	query := `SELECT id, name, nik, address, created_at, updated_at FROM buyer ORDER BY created_at`
+	query := `SELECT b.id, b.user_id, b.name, b.nik, b.address, b.created_at, b.updated_at, u.name
+			FROM buyer AS b 
+			INNER JOIN user AS u ON b.user_id=u.id
+			ORDER BY created_at`
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {
@@ -98,7 +103,10 @@ func (m *mysqlBuyerRepository) Fetch(ctx context.Context) (res []domain.Buyer, e
 }
 
 func (m *mysqlBuyerRepository) GetByID(ctx context.Context, id int64) (res domain.Buyer, err error) {
-	query := `SELECT id, name, nik, address, created_at, updated_at FROM buyer WHERE ID = ?`
+	query := `SELECT b.id, b.user_id, b.name, b.nik, b.address, b.created_at, b.updated_at, u.name
+			FROM buyer AS b 
+			INNER JOIN user AS u ON b.user_id=u.id
+			WHERE b.id = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -115,14 +123,14 @@ func (m *mysqlBuyerRepository) GetByID(ctx context.Context, id int64) (res domai
 }
 
 func (m *mysqlBuyerRepository) Update(ctx context.Context, b *domain.Buyer) (err error) {
-	query := `UPDATE buyer SET nik=?, name=?, address=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE buyer SET user_id=?, nik=?, name=?, address=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt, b.ID)
+	res, err := stmt.ExecContext(ctx, b.UserID, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt, b.ID)
 	if err != nil {
 		return
 	}
@@ -139,13 +147,13 @@ func (m *mysqlBuyerRepository) Update(ctx context.Context, b *domain.Buyer) (err
 }
 
 func (m *mysqlBuyerRepository) Store(ctx context.Context, b *domain.Buyer) (err error) {
-	query := `INSERT buyer SET nik=?, name=?, address=?, created_at=?, updated_at=?`
+	query := `INSERT buyer SET user_id=?, nik=?, name=?, address=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, b.UserID, b.Nik, b.Name, b.Address, b.CreatedAt, b.UpdatedAt)
 	if err != nil {
 		return
 	}

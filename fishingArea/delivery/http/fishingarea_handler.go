@@ -13,61 +13,60 @@ import (
 	"github.com/ditdittdittt/backend-sitpi/helper"
 )
 
-type BuyerHandler struct {
-	BUsecase domain.BuyerUsecase
+type FishingAreaHandler struct {
+	FAUsecase domain.FishingAreaUsecase
 }
 
-func NewBuyerHandler(router *mux.Router, uc domain.BuyerUsecase) {
-	handler := &BuyerHandler{BUsecase: uc}
-	router.HandleFunc("/buyer", handler.Fetch).Methods("GET")
-	router.HandleFunc("/buyer/inquiry", handler.Inquiry).Methods("GET")
-	router.HandleFunc("/buyer", handler.Store).Methods("POST")
-	router.HandleFunc("/buyer/{id}", handler.GetByID).Methods("GET")
-	router.HandleFunc("/buyer/{id}", handler.Update).Methods("PUT")
-	router.HandleFunc("/buyer/{id}", handler.Delete).Methods("DELETE")
+func NewFishingAreaHandler(router *mux.Router, uc domain.FishingAreaUsecase) {
+	handler := &FishingAreaHandler{FAUsecase: uc}
+	router.HandleFunc("/fishing_area", handler.FetchFishingArea).Methods("GET")
+	router.HandleFunc("/fishing_area/{id}", handler.GetByID).Methods("GET")
+	router.HandleFunc("/fishing_area", handler.Store).Methods("POST")
+	router.HandleFunc("/fishing_area/{id}", handler.Update).Methods("PUT")
+	router.HandleFunc("/fishing_area/{id}", handler.Delete).Methods("DELETE")
 }
 
-func (h *BuyerHandler) Fetch(res http.ResponseWriter, req *http.Request) {
+func (h *FishingAreaHandler) FetchFishingArea(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
 	ctx := req.Context()
-	listBuyer, err := h.BUsecase.Fetch(ctx)
+	listFishingArea, err := h.FAUsecase.Fetch(ctx)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to fetch buyer data"
+		response.Desc = "Failed to fetch fishing area data"
 		response.Data = err.Error()
 	} else {
 		response.Code = "00"
-		response.Desc = "Success to fetch buyer data"
-		response.Data = listBuyer
+		response.Desc = "Success to fetch fishing area data"
+		response.Data = listFishingArea
 	}
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *BuyerHandler) GetByID(res http.ResponseWriter, req *http.Request) {
+func (h *FishingAreaHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
 	params := mux.Vars(req)
 	id, _ := strconv.ParseInt(params["id"], 10, 64)
 
 	ctx := req.Context()
-	buyer, err := h.BUsecase.GetByID(ctx, id)
+	fishingArea, err := h.FAUsecase.GetByID(ctx, id)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to get by id buyer data"
+		response.Desc = "Failed to get by ID fishing area data"
 		response.Data = err.Error()
 	} else {
 		response.Code = "00"
-		response.Desc = "Success to get by id buyer data"
-		response.Data = buyer
+		response.Desc = "Success to get by ID fishing area data"
+		response.Data = fishingArea
 	}
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *BuyerHandler) Store(res http.ResponseWriter, req *http.Request) {
-	request := &domain.StoreBuyerRequest{}
+func (h *FishingAreaHandler) Store(res http.ResponseWriter, req *http.Request) {
+	request := &domain.StoreFishingAreaRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -89,21 +88,21 @@ func (h *BuyerHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	err = h.BUsecase.Store(ctx, request)
+	err = h.FAUsecase.Store(ctx, request)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to store buyer data"
+		response.Desc = "Failed to store fishing area data"
 		response.Data = err.Error()
 	} else {
 		response.Code = "00"
-		response.Desc = "Success to store buyer data"
+		response.Desc = "Success to store fishing area data"
 	}
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *BuyerHandler) Update(res http.ResponseWriter, req *http.Request) {
-	request := &domain.UpdateBuyerRequest{}
+func (h *FishingAreaHandler) Update(res http.ResponseWriter, req *http.Request) {
+	request := &domain.UpdateFishingAreaRequest{}
 	response := _response.New()
 
 	params := mux.Vars(req)
@@ -128,20 +127,20 @@ func (h *BuyerHandler) Update(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	err = h.BUsecase.Update(ctx, id, request)
+	err = h.FAUsecase.Update(ctx, id, request)
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to update buyer data"
+		response.Desc = "Failed to update fishing area data"
 		response.Data = err.Error()
 	} else {
 		response.Code = "00"
-		response.Desc = "Success to update buyer data"
+		response.Desc = "Success to update fishing area data"
 	}
 
 	helper.SetResponse(res, req, response)
 }
 
-func (h *BuyerHandler) Delete(res http.ResponseWriter, req *http.Request) {
+func (h *FishingAreaHandler) Delete(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
 	params := mux.Vars(req)
@@ -149,34 +148,15 @@ func (h *BuyerHandler) Delete(res http.ResponseWriter, req *http.Request) {
 
 	ctx := req.Context()
 
-	err := h.BUsecase.Delete(ctx, id)
+	err := h.FAUsecase.Delete(ctx, id)
 
 	if err != nil {
 		response.Code = "XX"
-		response.Desc = "Failed to delete buyer data"
+		response.Desc = "Failed to delete fishing area data"
 		response.Data = err.Error()
 	} else {
 		response.Code = "00"
-		response.Desc = "Success to delete buyer data"
-	}
-
-	helper.SetResponse(res, req, response)
-}
-
-func (h *BuyerHandler) Inquiry(res http.ResponseWriter, req *http.Request) {
-
-	response := _response.New()
-
-	ctx := req.Context()
-	listBuyer, err := h.BUsecase.Inquiry(ctx)
-	if err != nil {
-		response.Code = "XX"
-		response.Desc = "Failed to inquiry buyer data"
-		response.Data = err.Error()
-	} else {
-		response.Code = "00"
-		response.Desc = "Success to inquiry buyer data"
-		response.Data = listBuyer
+		response.Desc = "Success to delete fishing area data"
 	}
 
 	helper.SetResponse(res, req, response)

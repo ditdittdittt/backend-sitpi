@@ -64,12 +64,12 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 		r := domain.Transaction{}
 		err = rows.Scan(
 			&r.ID,
+			&r.UserID,
 			&r.TpiID,
-			&r.OfficerID,
 			&r.AuctionID,
 			&r.BuyerID,
-			&r.Price,
 			&r.DistributionArea,
+			&r.Price,
 			&r.CreatedAt,
 			&r.UpdatedAt,
 			&r.BuyerName,
@@ -90,18 +90,21 @@ func (m *mysqlTransactionRepository) fetch(ctx context.Context, query string, ar
 	return result, nil
 }
 
-func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
-	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, wu.unit
+func (m *mysqlTransactionRepository) Fetch(ctx context.Context, from time.Time, to time.Time, buyerID int64, fishTypeID int64) (res []domain.Transaction, err error) {
+	query := `SELECT t.id, t.user_id, t.tpi_id, t.auction_id, t.buyer_id, t.distribution_area, t.price, t.created_at, t.updated_at, b.name, f.name, ft.name, cf.weight, wu.unit
 		FROM transaction AS t
 		INNER JOIN auction AS a ON t.auction_id=a.id
-		INNER JOIN weight_unit AS wu ON a.weight_unit_id=wu.id
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN buyer AS b ON t.buyer_id=b.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
-		INNER JOIN buyer AS b ON t.buyer_id=b.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
+		WHERE t.created_at BETWEEN ? AND ? 
+		AND t.buyer_id = IF (?=0, t.buyer_id, ?) 
+		AND cf.fish_type_id = IF (?=0, cf.fish_type_id, ?)
 		ORDER BY t.created_at `
 
-	res, err = m.fetch(ctx, query)
+	res, err = m.fetch(ctx, query, from, to, buyerID, buyerID, fishTypeID, fishTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,14 +113,14 @@ func (m *mysqlTransactionRepository) Fetch(ctx context.Context) (res []domain.Tr
 }
 
 func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res domain.Transaction, err error) {
-	query := `SELECT t.id, t.tpi_id, t.officer_id, t.auction_id, t.buyer_id, t.price, t.distribution_area, t.created_at, t.updated_at, b.name, f.name, ft.name, a.weight, wu.unit 
+	query := `SELECT t.id, t.user_id, t.tpi_id, t.auction_id, t.buyer_id, t.distribution_area, t.price, t.created_at, t.updated_at, b.name, f.name, ft.name, cf.weight, wu.unit
 		FROM transaction AS t
 		INNER JOIN auction AS a ON t.auction_id=a.id
-		INNER JOIN weight_unit AS wu ON a.weight_unit_id=wu.id
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
+		INNER JOIN buyer AS b ON t.buyer_id=b.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
-		INNER JOIN buyer AS b ON t.buyer_id=b.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
 		WHERE t.id=?
 		`
 
@@ -136,14 +139,14 @@ func (m *mysqlTransactionRepository) GetByID(ctx context.Context, id int64) (res
 }
 
 func (m *mysqlTransactionRepository) Update(ctx context.Context, t *domain.Transaction) (err error) {
-	query := `UPDATE transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE transaction SET user_id=?, tpi_id=?, auction_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt, t.ID)
+	res, err := stmt.ExecContext(ctx, t.UserID, t.TpiID, t.AuctionID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt, t.ID)
 	if err != nil {
 		return
 	}
@@ -160,13 +163,13 @@ func (m *mysqlTransactionRepository) Update(ctx context.Context, t *domain.Trans
 }
 
 func (m *mysqlTransactionRepository) Store(ctx context.Context, t *domain.Transaction) (err error) {
-	query := `INSERT transaction SET tpi_id=?, auction_id=?, officer_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=?`
+	query := `INSERT transaction SET user_id=?, tpi_id=?, auction_id=?, buyer_id=?, distribution_area=?, price=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, t.TpiID, t.AuctionID, t.OfficerID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, t.UserID, t.TpiID, t.AuctionID, t.BuyerID, t.DistributionArea, t.Price, t.CreatedAt, t.UpdatedAt)
 	if err != nil {
 		return
 	}

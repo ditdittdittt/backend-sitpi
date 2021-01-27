@@ -2,44 +2,19 @@ package http
 
 import (
 	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
 	"github.com/ditdittdittt/backend-sitpi/domain"
 	_response "github.com/ditdittdittt/backend-sitpi/domain/response"
 	"github.com/ditdittdittt/backend-sitpi/helper"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
-	"net/http"
-	"strconv"
-	"time"
 )
 
 type FisherHandler struct {
 	FUsecase domain.FisherUsecase
-}
-
-type FetchFisherRequest struct {
-	Cursor string `json:"cursor"`
-	Num    int64  `json:"num"`
-}
-
-type GetByIDRequest struct {
-	ID int64 `json:"id"`
-}
-
-type StoreRequest struct {
-	Nik     string `json:"nik"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
-}
-
-type UpdateRequest struct {
-	ID      int64  `json:"id"`
-	Nik     string `json:"nik"`
-	Name    string `json:"name"`
-	Address string `json:"address"`
-}
-
-type DeleteRequest struct {
-	ID int64 `json:"id"`
 }
 
 func NewFisherHandler(router *mux.Router, uc domain.FisherUsecase) {
@@ -93,7 +68,7 @@ func (h *FisherHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 }
 
 func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
-	request := &StoreRequest{}
+	request := &domain.StoreFisherRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -115,14 +90,7 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
-		Nik:       request.Nik,
-		Address:   request.Address,
-		Name:      request.Name,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	err = h.FUsecase.Store(ctx, fisher)
+	err = h.FUsecase.Store(ctx, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to store fisher data"
@@ -136,7 +104,7 @@ func (h *FisherHandler) Store(res http.ResponseWriter, req *http.Request) {
 }
 
 func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
-	request := &UpdateRequest{}
+	request := &domain.UpdateFisherRequest{}
 	response := _response.New()
 
 	params := mux.Vars(req)
@@ -161,15 +129,7 @@ func (h *FisherHandler) Update(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fisher := &domain.Fisher{
-		ID:        id,
-		Nik:       request.Nik,
-		Name:      request.Name,
-		Address:   request.Address,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	err = h.FUsecase.Update(ctx, fisher)
+	err = h.FUsecase.Update(ctx, id, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to update fisher data"

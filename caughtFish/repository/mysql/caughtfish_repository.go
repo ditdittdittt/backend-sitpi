@@ -32,21 +32,23 @@ func (m *mysqlCaughtFishRepository) fetch(ctx context.Context, query string, arg
 		c := domain.CaughtFish{}
 		err = rows.Scan(
 			&c.ID,
+			&c.UserID,
 			&c.TpiID,
-			&c.OfficerID,
 			&c.FisherID,
 			&c.FishTypeID,
 			&c.WeightUnitID,
 			&c.FishingGearID,
+			&c.FishingAreaID,
 			&c.Weight,
-			&c.FishingArea,
+			&c.TripDay,
 			&c.CreatedAt,
 			&c.UpdatedAt,
-			&c.WeightUnit,
-			&c.FishingGear,
-			&c.FisherName,
 			&c.FisherNik,
+			&c.FisherName,
+			&c.FishingGear,
+			&c.FishingArea,
 			&c.FishType,
+			&c.WeightUnit,
 		)
 
 		if err != nil {
@@ -124,16 +126,20 @@ func (m *mysqlCaughtFishRepository) getTotalFisher(ctx context.Context, query st
 	return result, nil
 }
 
-func (m *mysqlCaughtFishRepository) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {
-	query := `SELECT cf.id, cf.tpi_id, cf.officer_id, cf.fisher_id, cf.fish_type_id, cf.weight_unit_id, cf.fishing_gear_id, cf.weight, cf.fishing_area, cf.created_at, cf.updated_at, wu.unit, fg.name, f.name, f.nik, ft.name
+func (m *mysqlCaughtFishRepository) Fetch(ctx context.Context, from time.Time, to time.Time, fisherID int64, fishTypeID int64) (res []domain.CaughtFish, err error) {
+	query := `SELECT cf.id, cf.user_id, cf.tpi_id, cf.fisher_id, cf.fish_type_id, cf.weight_unit_id, cf.fishing_gear_id, cf.fishing_area_id, cf.weight, cf.trip_day, cf.created_at, cf.updated_at, f.nik, f.name, fg.name, fa.name, ft.name, wu.unit
 		FROM caught_fish AS cf
-		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
-		INNER JOIN fishing_gear AS fg ON cf.fishing_gear_id=fg.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fishing_gear AS fg ON cf.fishing_gear_id=fg.id
+		INNER JOIN fishing_area AS fa ON cf.fishing_area_id=fa.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
+		WHERE cf.created_at BETWEEN ? AND ? 
+		AND cf.fisher_id = IF (?=0, cf.fisher_id, ?) 
+		AND cf.fish_type_id = IF (?=0, cf.fish_type_id, ?)
 		ORDER BY cf.created_at`
 
-	res, err = m.fetch(ctx, query)
+	res, err = m.fetch(ctx, query, from, to, fisherID, fisherID, fishTypeID, fishTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -142,12 +148,13 @@ func (m *mysqlCaughtFishRepository) Fetch(ctx context.Context) (res []domain.Cau
 }
 
 func (m *mysqlCaughtFishRepository) GetByID(ctx context.Context, id int64) (res domain.CaughtFish, err error) {
-	query := `SELECT cf.id, cf.tpi_id, cf.officer_id, cf.fisher_id, cf.fish_type_id, cf.weight_unit_id, cf.fishing_gear_id, cf.weight, cf.fishing_area, cf.created_at, cf.updated_at, wu.unit, fg.name, f.name, f.nik, ft.name
+	query := `SELECT cf.id, cf.user_id, cf.tpi_id, cf.fisher_id, cf.fish_type_id, cf.weight_unit_id, cf.fishing_gear_id, cf.fishing_area_id, cf.weight, cf.trip_day, cf.created_at, cf.updated_at, f.nik, f.name, fg.name, fa.name, ft.name, wu.unit
 		FROM caught_fish AS cf
-		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
-		INNER JOIN fishing_gear AS fg ON cf.fishing_gear_id=fg.id
 		INNER JOIN fisher AS f ON cf.fisher_id=f.id
+		INNER JOIN fishing_gear AS fg ON cf.fishing_gear_id=fg.id
+		INNER JOIN fishing_area AS fa ON cf.fishing_area_id=fa.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
+		INNER JOIN weight_unit AS wu ON cf.weight_unit_id=wu.id
 		WHERE cf.id = ?`
 
 	list, err := m.fetch(ctx, query, id)
@@ -165,14 +172,14 @@ func (m *mysqlCaughtFishRepository) GetByID(ctx context.Context, id int64) (res 
 }
 
 func (m *mysqlCaughtFishRepository) Update(ctx context.Context, c *domain.CaughtFish) (err error) {
-	query := `UPDATE caught_fish SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight_unit_id=?, fishing_gear_id=?, weight=?, fishing_area=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE caught_fish SET user_id=?, tpi_id=?, fisher_id=?, fish_type_id=?, weight_unit_id=?, fishing_gear_id=?, fishing_area_id=?, weight=?, trip_day=?, created_at=?, updated_at=? WHERE ID = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, c.TpiID, c.OfficerID, c.FisherID, c.FishTypeID, c.WeightUnitID, c.FishingGearID, c.Weight, c.FishingArea, c.CreatedAt, c.UpdatedAt, c.ID)
+	res, err := stmt.ExecContext(ctx, c.UserID, c.TpiID, c.FisherID, c.FishTypeID, c.WeightUnitID, c.FishingGearID, c.FishingAreaID, c.Weight, c.TripDay, c.CreatedAt, c.UpdatedAt, c.ID)
 	if err != nil {
 		return
 	}
@@ -186,17 +193,16 @@ func (m *mysqlCaughtFishRepository) Update(ctx context.Context, c *domain.Caught
 	}
 
 	return
-
 }
 
 func (m *mysqlCaughtFishRepository) Store(ctx context.Context, c *domain.CaughtFish) (lastID int64, err error) {
-	query := `INSERT caught_fish SET tpi_id=?, officer_id=?, fisher_id=?, fish_type_id=?, weight_unit_id=?, fishing_gear_id=?, weight=?, fishing_area=?, created_at=?, updated_at=?`
+	query := `INSERT caught_fish SET user_id=?, tpi_id=?, fisher_id=?, fish_type_id=?, weight_unit_id=?, fishing_gear_id=?, fishing_area_id=?, weight=?, trip_day=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, c.TpiID, c.OfficerID, c.FisherID, c.FishTypeID, c.WeightUnitID, c.FishingGearID, c.Weight, c.FishingArea, c.CreatedAt, c.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, c.UserID, c.TpiID, c.FisherID, c.FishTypeID, c.WeightUnitID, c.FishingGearID, c.FishingAreaID, c.Weight, c.TripDay, c.CreatedAt, c.UpdatedAt)
 	if err != nil {
 		return
 	}

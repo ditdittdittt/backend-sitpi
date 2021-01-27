@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/ditdittdittt/backend-sitpi/domain"
+	"strconv"
 	"time"
 )
 
@@ -40,12 +41,38 @@ func (uc *transactionUsecase) GetTotalBuyer(ctx context.Context, from string, to
 	return
 }
 
-func (uc *transactionUsecase) Fetch(ctx context.Context) (res []domain.Transaction, err error) {
+func (uc *transactionUsecase) Fetch(ctx context.Context, request *domain.FetchTransactionRequest) (res []domain.Transaction, err error) {
+	var timestampFrom time.Time
+	var timestampTo time.Time
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, err = uc.transactionRepo.Fetch(ctx)
+	if request.From == "" {
+		dateNowString := time.Now().Format("2006-01-02")
+		timestampFrom, err = time.Parse(layoutISO, dateNowString)
+	} else {
+		timestampFrom, err = time.Parse(layoutISO, request.From)
+	}
+
+	if request.To == "" {
+		timestampTo = time.Now()
+	} else {
+		timestampTo, err = time.Parse(layoutISO, request.To)
+		if err != nil {
+			return nil, err
+		}
+		timestampTo = timestampTo.Add(24 * time.Hour)
+	}
+
+	buyerID, err := strconv.ParseInt(request.BuyerID, 10, 64)
+	fishTypeID, err := strconv.ParseInt(request.FishTypeID, 10, 64)
+
+	if err != nil {
+		return []domain.Transaction{}, err
+	}
+
+	res, err = uc.transactionRepo.Fetch(ctx, timestampFrom, timestampTo, buyerID, fishTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -65,11 +92,11 @@ func (uc *transactionUsecase) GetByID(ctx context.Context, id int64) (res domain
 	return
 }
 
-func (uc *transactionUsecase) Update(ctx context.Context, t *domain.Transaction) (err error) {
+func (uc *transactionUsecase) Update(ctx context.Context, id int64, request *domain.UpdateTransactionRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	existedTransaction, err := uc.transactionRepo.GetByID(ctx, t.ID)
+	existedTransaction, err := uc.transactionRepo.GetByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -77,30 +104,43 @@ func (uc *transactionUsecase) Update(ctx context.Context, t *domain.Transaction)
 		return domain.ErrNotFound
 	}
 
-	t.TpiID = 1
-	t.OfficerID = 1
-	t.CreatedAt = existedTransaction.CreatedAt
-	t.UpdatedAt = time.Now()
+	transaction := &domain.Transaction{
+		ID:               id,
+		UserID:           1,
+		TpiID:            1,
+		AuctionID:        existedTransaction.AuctionID,
+		BuyerID:          request.BuyerID,
+		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
+		CreatedAt:        existedTransaction.CreatedAt,
+		UpdatedAt:        time.Now(),
+	}
 
-	err = uc.transactionRepo.Update(ctx, t)
+	err = uc.transactionRepo.Update(ctx, transaction)
 	return
 }
 
-func (uc *transactionUsecase) Store(ctx context.Context, t *domain.Transaction) (err error) {
+func (uc *transactionUsecase) Store(ctx context.Context, request *domain.StoreTransactionRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	t.TpiID = 1
-	t.OfficerID = 1
-	t.UpdatedAt = time.Now()
-	t.CreatedAt = time.Now()
+	transaction := &domain.Transaction{
+		UserID:           1,
+		TpiID:            1,
+		AuctionID:        request.AuctionID,
+		BuyerID:          request.BuyerID,
+		DistributionArea: request.DistributionArea,
+		Price:            request.Price,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+	}
 
-	err = uc.transactionRepo.Store(ctx, t)
+	err = uc.transactionRepo.Store(ctx, transaction)
 	if err != nil {
 		return
 	}
 
-	err = uc.auctionRepo.UpdateStatus(ctx, t.AuctionID)
+	err = uc.auctionRepo.UpdateStatus(ctx, transaction.AuctionID)
 	if err != nil {
 		return
 	}

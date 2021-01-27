@@ -59,7 +59,6 @@ func (m *mysqlFishingGearRepository) Fetch(ctx context.Context) (res []domain.Fi
 }
 
 func (m *mysqlFishingGearRepository) GetByID(ctx context.Context, id int64) (res domain.FishingGear, err error) {
-
 	query := `SELECT id, name, created_at, updated_at FROM fishing_gear WHERE ID = ?`
 
 	list, err := m.fetch(ctx, query, id)
