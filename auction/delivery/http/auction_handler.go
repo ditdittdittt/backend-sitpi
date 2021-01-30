@@ -1,29 +1,18 @@
 package http
 
 import (
-	"encoding/json"
+	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
+
 	"github.com/ditdittdittt/backend-sitpi/domain"
 	_response "github.com/ditdittdittt/backend-sitpi/domain/response"
 	"github.com/ditdittdittt/backend-sitpi/helper"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
-	"net/http"
-	"strconv"
 )
 
 type AuctionHandler struct {
 	AUsecase domain.AuctionUsecase
-}
-
-type StoreRequest struct {
-	Weight       float64 `json:"weight"`
-	WeightUnitID int64   `json:"weight_unit_id"`
-	CaughtFishID int64   `json:"caught_fish_id"`
-}
-
-type UpdateRequest struct {
-	Weight       float64 `json:"weight"`
-	WeightUnitID int64   `json:"weight_unit_id"`
 }
 
 func NewAuctionHandler(router *mux.Router, uc domain.AuctionUsecase) {
@@ -31,16 +20,52 @@ func NewAuctionHandler(router *mux.Router, uc domain.AuctionUsecase) {
 	router.HandleFunc("/auction", handler.FetchAuction).Methods("GET")
 	router.HandleFunc("/auction/inquiry", handler.Inquiry).Methods("GET")
 	router.HandleFunc("/auction/{id}", handler.GetByID).Methods("GET")
-	router.HandleFunc("/auction", handler.Store).Methods("POST")
-	router.HandleFunc("/auction/{id}", handler.Update).Methods("PUT")
 	router.HandleFunc("/auction/{id}", handler.Delete).Methods("DELETE")
 }
 
 func (h *AuctionHandler) FetchAuction(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
+	fromParam := req.URL.Query()["from"]
+	if len(fromParam) == 0 {
+		fromParam = append(fromParam, "")
+	}
+
+	toParam := req.URL.Query()["to"]
+	if len(toParam) == 0 {
+		toParam = append(toParam, "")
+	}
+
+	auctionParam := req.URL.Query()["auction_id"]
+	if len(auctionParam) == 0 {
+		auctionParam = append(auctionParam, "0")
+	}
+
+	fisherParam := req.URL.Query()["fisher_id"]
+	if len(fisherParam) == 0 {
+		fisherParam = append(fisherParam, "0")
+	}
+
+	fishTypeParam := req.URL.Query()["fish_type_id"]
+	if len(fishTypeParam) == 0 {
+		fishTypeParam = append(fishTypeParam, "0")
+	}
+
+	statusParam := req.URL.Query()["status_id"]
+	if len(statusParam) == 0 {
+		statusParam = append(statusParam, "0")
+	}
+
 	ctx := req.Context()
-	listAuction, err := h.AUsecase.Fetch(ctx)
+	request := &domain.FetchAuctionRequest{
+		From:       fromParam[0],
+		To:         toParam[0],
+		AuctionID:  auctionParam[0],
+		FisherID:   fisherParam[0],
+		FishTypeID: fishTypeParam[0],
+		StatusID:   statusParam[0],
+	}
+	listAuction, err := h.AUsecase.Fetch(ctx, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to fetch auction data"
@@ -70,93 +95,6 @@ func (h *AuctionHandler) GetByID(res http.ResponseWriter, req *http.Request) {
 		response.Code = "00"
 		response.Desc = "Success to get by ID auction data"
 		response.Data = auction
-	}
-
-	helper.SetResponse(res, req, response)
-}
-
-func (h *AuctionHandler) Store(res http.ResponseWriter, req *http.Request) {
-	request := &StoreRequest{}
-	response := _response.New()
-
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	ctx := req.Context()
-	auction := &domain.Auction{
-		CaughtFishID: request.CaughtFishID,
-		Weight:       request.Weight,
-		WeightUnitID: request.WeightUnitID,
-	}
-
-	err = h.AUsecase.Store(ctx, auction)
-	if err != nil {
-		response.Code = "XX"
-		response.Desc = "Failed to store auction data"
-		response.Data = err.Error()
-	} else {
-		response.Code = "00"
-		response.Desc = "Success to store auction data"
-	}
-
-	helper.SetResponse(res, req, response)
-}
-
-func (h *AuctionHandler) Update(res http.ResponseWriter, req *http.Request) {
-	request := &UpdateRequest{}
-	response := _response.New()
-
-	params := mux.Vars(req)
-	id, _ := strconv.ParseInt(params["id"], 10, 64)
-
-	body, err := helper.ReadRequest(req, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	err = helper.ValidateRequest(request, response)
-	if err != nil {
-		response.Data = err.Error()
-		logrus.Error(err)
-	}
-
-	ctx := req.Context()
-	auction := &domain.Auction{
-		ID:           id,
-		Weight:       request.Weight,
-		WeightUnitID: request.WeightUnitID,
-	}
-
-	err = h.AUsecase.Update(ctx, auction)
-	if err != nil {
-		response.Code = "XX"
-		response.Desc = "Failed to update auction data"
-		response.Data = err.Error()
-	} else {
-		response.Code = "00"
-		response.Desc = "Success to update auction data"
 	}
 
 	helper.SetResponse(res, req, response)

@@ -35,11 +35,15 @@ func (m *mysqlFisherRepository) fetch(ctx context.Context, query string, args ..
 		r := domain.Fisher{}
 		err = rows.Scan(
 			&r.ID,
-			&r.Name,
+			&r.UserID,
 			&r.Nik,
+			&r.Name,
 			&r.Address,
+			&r.ShipType,
+			&r.AbkTotal,
 			&r.CreatedAt,
 			&r.UpdatedAt,
+			&r.UserName,
 		)
 
 		if err != nil {
@@ -90,7 +94,9 @@ func (m *mysqlFisherRepository) inquiry(ctx context.Context, query string, args 
 }
 
 func (m *mysqlFisherRepository) Fetch(ctx context.Context) (res []domain.Fisher, err error) {
-	query := `SELECT id, name, nik, address, created_at, updated_at FROM fisher`
+	query := `SELECT f.id, f.user_id, f.nik, f.name, f.address, f.ship_type, f.abk_total, f.created_at, f.updated_at, u.name
+			FROM fisher AS f
+			INNER JOIN user AS u ON f.user_id=u.id`
 
 	res, err = m.fetch(ctx, query)
 	if err != nil {
@@ -101,7 +107,10 @@ func (m *mysqlFisherRepository) Fetch(ctx context.Context) (res []domain.Fisher,
 }
 
 func (m *mysqlFisherRepository) GetByID(ctx context.Context, id int64) (res domain.Fisher, err error) {
-	query := `SELECT id, name, nik, address, created_at, updated_at FROM fisher WHERE ID = ?`
+	query := `SELECT f.id, f.user_id, f.nik, f.name, f.address, f.ship_type, f.abk_total, f.created_at, f.updated_at, u.name
+			FROM fisher AS f
+			INNER JOIN user AS u ON f.user_id=u.id
+			WHERE f.id = ?`
 
 	list, err := m.fetch(ctx, query, id)
 	if err != nil {
@@ -118,14 +127,14 @@ func (m *mysqlFisherRepository) GetByID(ctx context.Context, id int64) (res doma
 }
 
 func (m *mysqlFisherRepository) Update(ctx context.Context, f *domain.Fisher) (err error) {
-	query := `UPDATE fisher SET nik=?, name=?, address=?, created_at=?, updated_at=? WHERE ID = ?`
+	query := `UPDATE fisher SET user_id=?, nik=?, name=?, address=?, ship_type=?, abk_total=?, created_at=?, updated_at=? WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, f.Nik, f.Name, f.Address, f.CreatedAt, f.UpdatedAt, f.ID)
+	res, err := stmt.ExecContext(ctx, f.UserID, f.Nik, f.Name, f.Address, f.ShipType, f.AbkTotal, f.CreatedAt, f.UpdatedAt, f.ID)
 	if err != nil {
 		return
 	}
@@ -142,13 +151,13 @@ func (m *mysqlFisherRepository) Update(ctx context.Context, f *domain.Fisher) (e
 }
 
 func (m *mysqlFisherRepository) Store(ctx context.Context, f *domain.Fisher) (err error) {
-	query := `INSERT fisher SET nik=?, name=?, address=?, created_at=?, updated_at=?`
+	query := `INSERT fisher SET user_id=?, nik=?, name=?, address=?, ship_type=?, abk_total=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, f.Nik, f.Name, f.Address, f.CreatedAt, f.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, f.UserID, f.Nik, f.Name, f.Address, f.ShipType, f.AbkTotal, f.CreatedAt, f.UpdatedAt)
 	if err != nil {
 		return
 	}
@@ -162,7 +171,7 @@ func (m *mysqlFisherRepository) Store(ctx context.Context, f *domain.Fisher) (er
 }
 
 func (m *mysqlFisherRepository) Delete(ctx context.Context, id int64) (err error) {
-	query := `DELETE FROM fisher WHERE ID = ?`
+	query := `DELETE FROM fisher WHERE id = ?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {

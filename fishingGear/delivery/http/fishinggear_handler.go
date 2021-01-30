@@ -15,14 +15,6 @@ type FishingGearHandler struct {
 	FGUsecase domain.FishingGearUsecase
 }
 
-type StoreRequest struct {
-	Name string `json:"name"`
-}
-
-type UpdateRequest struct {
-	Name string `json:"name"`
-}
-
 func NewFishingGearHandler(router *mux.Router, uc domain.FishingGearUsecase) {
 	handler := &FishingGearHandler{FGUsecase: uc}
 	router.HandleFunc("/fishing_gear", handler.Fetch).Methods("GET")
@@ -72,7 +64,7 @@ func (h *FishingGearHandler) GetByID(res http.ResponseWriter, req *http.Request)
 }
 
 func (h *FishingGearHandler) Store(res http.ResponseWriter, req *http.Request) {
-	request := &StoreRequest{}
+	request := &domain.StoreFishingGearRequest{}
 	response := _response.New()
 
 	body, err := helper.ReadRequest(req, response)
@@ -94,11 +86,7 @@ func (h *FishingGearHandler) Store(res http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := req.Context()
-	fishingGear := &domain.FishingGear{
-		Name: request.Name,
-	}
-
-	err = h.FGUsecase.Store(ctx, fishingGear)
+	err = h.FGUsecase.Store(ctx, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to store fishing gear data"
@@ -112,7 +100,7 @@ func (h *FishingGearHandler) Store(res http.ResponseWriter, req *http.Request) {
 }
 
 func (h *FishingGearHandler) Update(res http.ResponseWriter, req *http.Request) {
-	request := &UpdateRequest{}
+	request := &domain.UpdateFishingGearRequest{}
 	response := _response.New()
 
 	params := mux.Vars(req)
@@ -137,12 +125,7 @@ func (h *FishingGearHandler) Update(res http.ResponseWriter, req *http.Request) 
 	}
 
 	ctx := req.Context()
-	fishingGear := &domain.FishingGear{
-		ID:   id,
-		Name: request.Name,
-	}
-
-	err = h.FGUsecase.Update(ctx, fishingGear)
+	err = h.FGUsecase.Update(ctx, id, request)
 	if err != nil {
 		response.Code = "XX"
 		response.Desc = "Failed to update fishing gear data"
@@ -156,7 +139,6 @@ func (h *FishingGearHandler) Update(res http.ResponseWriter, req *http.Request) 
 }
 
 func (h *FishingGearHandler) Delete(res http.ResponseWriter, req *http.Request) {
-
 	response := _response.New()
 
 	params := mux.Vars(req)

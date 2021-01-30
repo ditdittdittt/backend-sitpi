@@ -3,7 +3,12 @@ package usecase
 import (
 	"context"
 	"github.com/ditdittdittt/backend-sitpi/domain"
+	"strconv"
 	"time"
+)
+
+const (
+	layoutISO = "2006-01-02"
 )
 
 type auctionUsecase struct {
@@ -11,12 +16,40 @@ type auctionUsecase struct {
 	contextTimeout time.Duration
 }
 
-func (uc *auctionUsecase) Fetch(ctx context.Context) (res []domain.Auction, err error) {
+func (uc *auctionUsecase) Fetch(ctx context.Context, request *domain.FetchAuctionRequest) (res []domain.Auction, err error) {
+	var timestampFrom time.Time
+	var timestampTo time.Time
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, err = uc.auctionRepo.Fetch(ctx)
+	if request.From == "" {
+		dateNowString := time.Now().Format("2006-01-02")
+		timestampFrom, err = time.Parse(layoutISO, dateNowString)
+	} else {
+		timestampFrom, err = time.Parse(layoutISO, request.From)
+	}
+
+	if request.To == "" {
+		timestampTo = time.Now()
+	} else {
+		timestampTo, err = time.Parse(layoutISO, request.To)
+		if err != nil {
+			return nil, err
+		}
+		timestampTo = timestampTo.Add(24 * time.Hour)
+	}
+
+	auctionID, err := strconv.ParseInt(request.AuctionID, 10, 64)
+	fisherID, err := strconv.ParseInt(request.FisherID, 10, 64)
+	fishTypeID, err := strconv.ParseInt(request.FishTypeID, 10, 64)
+	statusID, err := strconv.ParseInt(request.StatusID, 10, 64)
+
+	if err != nil {
+		return []domain.Auction{}, err
+	}
+
+	res, err = uc.auctionRepo.Fetch(ctx, timestampFrom, timestampTo, auctionID, fisherID, fishTypeID, statusID)
 	if err != nil {
 		return nil, err
 	}
@@ -33,43 +66,6 @@ func (uc *auctionUsecase) GetByID(ctx context.Context, id int64) (res domain.Auc
 		return
 	}
 
-	return
-}
-
-func (uc *auctionUsecase) Update(ctx context.Context, a *domain.Auction) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
-	defer cancel()
-
-	existedAuction, err := uc.auctionRepo.GetByID(ctx, a.ID)
-	if err != nil {
-		return
-	}
-	if existedAuction == (domain.Auction{}) {
-		return domain.ErrNotFound
-	}
-
-	a.TpiID = existedAuction.TpiID
-	a.OfficerID = existedAuction.OfficerID
-	a.CaughtFishID = existedAuction.CaughtFishID
-	a.Status = existedAuction.Status
-	a.CreatedAt = existedAuction.CreatedAt
-	a.UpdatedAt = time.Now()
-
-	err = uc.auctionRepo.Update(ctx, a)
-	return
-}
-
-func (uc *auctionUsecase) Store(ctx context.Context, a *domain.Auction) (err error) {
-	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
-	defer cancel()
-
-	a.TpiID = 1
-	a.OfficerID = 1
-	a.Status = 1
-	a.CreatedAt = time.Now()
-	a.UpdatedAt = time.Now()
-
-	err = uc.auctionRepo.Store(ctx, a)
 	return
 }
 

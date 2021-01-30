@@ -35,11 +35,11 @@ func (uc *buyerUsecase) GetByID(ctx context.Context, id int64) (res domain.Buyer
 	return
 }
 
-func (uc *buyerUsecase) Update(ctx context.Context, b *domain.Buyer) (err error) {
+func (uc *buyerUsecase) Update(ctx context.Context, id int64, request *domain.UpdateBuyerRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	existedBuyer, err := uc.buyerRepo.GetByID(ctx, b.ID)
+	existedBuyer, err := uc.buyerRepo.GetByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -47,18 +47,34 @@ func (uc *buyerUsecase) Update(ctx context.Context, b *domain.Buyer) (err error)
 		return domain.ErrNotFound
 	}
 
-	b.CreatedAt = existedBuyer.CreatedAt
-	b.UpdatedAt = time.Now()
+	buyer := &domain.Buyer{
+		ID:        id,
+		UserID:    1,
+		Nik:       request.Nik,
+		Name:      request.Name,
+		Address:   request.Address,
+		CreatedAt: existedBuyer.CreatedAt,
+		UpdatedAt: time.Now(),
+	}
 
-	err = uc.buyerRepo.Update(ctx, b)
+	err = uc.buyerRepo.Update(ctx, buyer)
 	return
 }
 
-func (uc *buyerUsecase) Store(ctx context.Context, b *domain.Buyer) (err error) {
+func (uc *buyerUsecase) Store(ctx context.Context, request *domain.StoreBuyerRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	err = uc.buyerRepo.Store(ctx, b)
+	buyer := &domain.Buyer{
+		UserID:    1,
+		Nik:       request.Nik,
+		Name:      request.Name,
+		Address:   request.Address,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err = uc.buyerRepo.Store(ctx, buyer)
 	return
 }
 

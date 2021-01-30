@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"github.com/ditdittdittt/backend-sitpi/domain"
+	"strconv"
 	"time"
 )
 
@@ -64,12 +65,38 @@ func (uc *caughtFishUsecase) GetTotalProduction(ctx context.Context, from string
 	return
 }
 
-func (uc *caughtFishUsecase) Fetch(ctx context.Context) (res []domain.CaughtFish, err error) {
+func (uc *caughtFishUsecase) Fetch(ctx context.Context, request *domain.FetchCaughtFishRequest) (res []domain.CaughtFish, err error) {
+	var timestampFrom time.Time
+	var timestampTo time.Time
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	res, err = uc.caughtFishRepo.Fetch(ctx)
+	if request.From == "" {
+		dateNowString := time.Now().Format("2006-01-02")
+		timestampFrom, err = time.Parse(layoutISO, dateNowString)
+	} else {
+		timestampFrom, err = time.Parse(layoutISO, request.From)
+	}
+
+	if request.To == "" {
+		timestampTo = time.Now()
+	} else {
+		timestampTo, err = time.Parse(layoutISO, request.To)
+		if err != nil {
+			return nil, err
+		}
+		timestampTo = timestampTo.Add(24 * time.Hour)
+	}
+
+	fisherID, err := strconv.ParseInt(request.FisherID, 10, 64)
+	fishTypeID, err := strconv.ParseInt(request.FishTypeID, 10, 64)
+
+	if err != nil {
+		return []domain.CaughtFish{}, err
+	}
+
+	res, err = uc.caughtFishRepo.Fetch(ctx, timestampFrom, timestampTo, fisherID, fishTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,11 +116,11 @@ func (uc *caughtFishUsecase) GetByID(ctx context.Context, id int64) (res domain.
 	return
 }
 
-func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) (err error) {
+func (uc *caughtFishUsecase) Update(ctx context.Context, id int64, request *domain.UpdateCaughtFishRequest) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	existedCaughtFish, err := uc.caughtFishRepo.GetByID(ctx, cf.ID)
+	existedCaughtFish, err := uc.caughtFishRepo.GetByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -101,40 +128,64 @@ func (uc *caughtFishUsecase) Update(ctx context.Context, cf *domain.CaughtFish) 
 		return domain.ErrNotFound
 	}
 
-	cf.TpiID = existedCaughtFish.TpiID
-	cf.OfficerID = existedCaughtFish.OfficerID
-	cf.CreatedAt = existedCaughtFish.CreatedAt
-	cf.UpdatedAt = time.Now()
+	caughtFish := &domain.CaughtFish{
+		ID:            id,
+		UserID:        1,
+		TpiID:         1,
+		FisherID:      request.FisherID,
+		FishTypeID:    request.FishTypeID,
+		WeightUnitID:  request.WeightUnitID,
+		FishingGearID: request.FishingGearID,
+		FishingAreaID: request.FishingAreaID,
+		Weight:        request.Weight,
+		TripDay:       request.TripDay,
+		CreatedAt:     existedCaughtFish.CreatedAt,
+		UpdatedAt:     time.Now(),
+	}
 
-	err = uc.caughtFishRepo.Update(ctx, cf)
+	err = uc.caughtFishRepo.Update(ctx, caughtFish)
 	return
 }
 
-func (uc *caughtFishUsecase) Store(ctx context.Context, cf *domain.CaughtFish, a *domain.Auction) (err error) {
+func (uc *caughtFishUsecase) Store(ctx context.Context, request *domain.StoreCaughtFishRequest) (err error) {
 
 	ctx, cancel := context.WithTimeout(ctx, uc.contextTimeout)
 	defer cancel()
 
-	cf.TpiID = 1
-	cf.OfficerID = 1
-	cf.CreatedAt = time.Now()
-	cf.UpdatedAt = time.Now()
-
-	lastID, err := uc.caughtFishRepo.Store(ctx, cf)
-	if err != nil {
-		return
+	cf := &domain.CaughtFish{
+		FisherID:      request.FisherID,
+		TripDay:       request.TripDay,
+		FishingGearID: request.FishingGearID,
+		FishingAreaID: request.FishingAreaID,
+		UserID:        1, // TODO change with auth
+		TpiID:         1, // TODO change with auth
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 
-	a.TpiID = 1
-	a.OfficerID = 1
-	a.CaughtFishID = lastID
-	a.Status = 1
-	a.CreatedAt = time.Now()
-	a.UpdatedAt = time.Now()
+	a := &domain.Auction{
+		TpiID:     1, // TODO change with auth
+		StatusID:  1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
-	err = uc.auctionRepo.Store(ctx, a)
-	if err != nil {
-		return
+	for _, caughtFishData := range request.CaughtFishData {
+		cf.FishTypeID = caughtFishData.FishTypeID
+		cf.Weight = caughtFishData.Weight
+		cf.WeightUnitID = caughtFishData.WeightUnitID
+
+		lastID, err := uc.caughtFishRepo.Store(ctx, cf)
+		if err != nil {
+			return err
+		}
+
+		a.CaughtFishID = lastID
+
+		err = uc.auctionRepo.Store(ctx, a)
+		if err != nil {
+			return err
+		}
 	}
 
 	return

@@ -3,6 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
+	"net/http"
+	"net/url"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
+	"github.com/spf13/viper"
+
 	_auctionHttpDelivery "github.com/ditdittdittt/backend-sitpi/auction/delivery/http"
 	_auctionRepo "github.com/ditdittdittt/backend-sitpi/auction/repository/mysql"
 	_auctionUsecase "github.com/ditdittdittt/backend-sitpi/auction/usecase"
@@ -18,6 +28,9 @@ import (
 	_fisherHttpDelivery "github.com/ditdittdittt/backend-sitpi/fisher/delivery/http"
 	_fisherRepo "github.com/ditdittdittt/backend-sitpi/fisher/repository/mysql"
 	_fisherUsecase "github.com/ditdittdittt/backend-sitpi/fisher/usecase"
+	_fishingAreaHttpDelivery "github.com/ditdittdittt/backend-sitpi/fishingArea/delivery/http"
+	_fishingAreaRepo "github.com/ditdittdittt/backend-sitpi/fishingArea/repository/mysql"
+	_fishingAreaUsecase "github.com/ditdittdittt/backend-sitpi/fishingArea/usecase"
 	_fishingGearHttpDelivery "github.com/ditdittdittt/backend-sitpi/fishingGear/delivery/http"
 	_fishingGearRepo "github.com/ditdittdittt/backend-sitpi/fishingGear/repository/mysql"
 	_fishingGearUsecase "github.com/ditdittdittt/backend-sitpi/fishingGear/usecase"
@@ -27,14 +40,6 @@ import (
 	_weightUnitHttpDelivery "github.com/ditdittdittt/backend-sitpi/weightUnit/delivery/http"
 	_weightUnitRepo "github.com/ditdittdittt/backend-sitpi/weightUnit/repository/mysql"
 	_weightUnitUsecase "github.com/ditdittdittt/backend-sitpi/weightUnit/usecase"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
-	"github.com/spf13/viper"
-	"log"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 func init() {
@@ -112,6 +117,10 @@ func main() {
 	weightUnitRepo := _weightUnitRepo.NewMysqlWeightUnitRepository(dbConn)
 	weightUnitUsecase := _weightUnitUsecase.NewWeightUnitUsecase(weightUnitRepo, timeoutContext)
 	_weightUnitHttpDelivery.NewWeightUnitHandler(r, weightUnitUsecase)
+
+	fishingAreaRepo := _fishingAreaRepo.NewFishingAreRepository(dbConn)
+	fishingAreaUsecase := _fishingAreaUsecase.NewFishingAreaUsecase(fishingAreaRepo, timeoutContext)
+	_fishingAreaHttpDelivery.NewFishingAreaHandler(r, fishingAreaUsecase)
 
 	handler := cors.Default().Handler(r)
 	c := cors.New(cors.Options{AllowedMethods: []string{"POST", "GET", "DELETE", "PUT"}})

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql
--- Generation Time: Jan 05, 2021 at 10:07 AM
+-- Generation Time: Jan 27, 2021 at 02:04 AM
 -- Server version: 5.7.32
 -- PHP Version: 7.4.13
 
@@ -30,11 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `auction` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `tpi_id` int(11) NOT NULL,
-  `officer_id` int(11) NOT NULL,
   `caught_fish_id` int(11) NOT NULL,
-  `weight_unit_id` int(11) NOT NULL,
-  `weight` double(8,2) NOT NULL,
-  `status` int(11) NOT NULL,
+  `status_id` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -43,10 +40,9 @@ CREATE TABLE `auction` (
 -- Dumping data for table `auction`
 --
 
-INSERT INTO `auction` (`id`, `tpi_id`, `officer_id`, `caught_fish_id`, `weight_unit_id`, `weight`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 1, 1, 1200.00, 2, '2021-01-03 12:36:29', '2021-01-03 12:55:56'),
-(2, 1, 1, 2, 1, 12345.00, 1, '2021-01-03 15:37:20', '2021-01-03 15:37:20'),
-(3, 1, 1, 3, 1, 700.00, 2, '2021-01-03 15:37:56', '2021-01-03 16:13:14');
+INSERT INTO `auction` (`id`, `tpi_id`, `caught_fish_id`, `status_id`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 2, '2021-01-27 08:07:45', '2021-01-27 08:07:45'),
+(2, 1, 1, 1, '2021-01-27 08:07:45', '2021-01-27 08:07:45');
 
 -- --------------------------------------------------------
 
@@ -66,8 +62,8 @@ CREATE TABLE `auction_status` (
 --
 
 INSERT INTO `auction_status` (`id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Belum Terjual', '2021-01-03 12:53:25', '2021-01-03 12:53:25'),
-(2, 'Sudah Terjual', '2021-01-03 12:53:49', '2021-01-03 12:53:49');
+(1, 'Belum Terjual', '2021-01-23 11:17:57', '2021-01-23 11:17:57'),
+(2, 'Sudah Terjual', '2021-01-23 11:18:15', '2021-01-23 11:18:15');
 
 -- --------------------------------------------------------
 
@@ -77,8 +73,9 @@ INSERT INTO `auction_status` (`id`, `status`, `created_at`, `updated_at`) VALUES
 
 CREATE TABLE `buyer` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int(11) NOT NULL,
   `nik` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -88,8 +85,9 @@ CREATE TABLE `buyer` (
 -- Dumping data for table `buyer`
 --
 
-INSERT INTO `buyer` (`id`, `name`, `nik`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'Buyer 1', '123124213123', 'Candrabga', '2021-01-03 12:33:44', '2021-01-03 12:33:44');
+INSERT INTO `buyer` (`id`, `user_id`, `nik`, `name`, `address`, `created_at`, `updated_at`) VALUES
+(1, 1, '123124124213', 'Buyer 1', 'Updated', '2021-01-23 12:09:33', '2021-01-23 12:14:31'),
+(2, 1, '123124213123', 'Buyer 2', 'Candrabaga', '2021-01-23 12:11:11', '2021-01-23 12:11:11');
 
 -- --------------------------------------------------------
 
@@ -99,14 +97,15 @@ INSERT INTO `buyer` (`id`, `name`, `nik`, `address`, `created_at`, `updated_at`)
 
 CREATE TABLE `caught_fish` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` int(11) NOT NULL,
   `tpi_id` int(11) NOT NULL,
-  `officer_id` int(11) NOT NULL,
   `fisher_id` int(11) NOT NULL,
   `fish_type_id` int(11) NOT NULL,
   `weight_unit_id` int(11) NOT NULL,
   `fishing_gear_id` int(11) NOT NULL,
+  `fishing_area_id` int(11) NOT NULL,
   `weight` double(8,2) NOT NULL,
-  `fishing_area` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `trip_day` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -115,10 +114,22 @@ CREATE TABLE `caught_fish` (
 -- Dumping data for table `caught_fish`
 --
 
-INSERT INTO `caught_fish` (`id`, `tpi_id`, `officer_id`, `fisher_id`, `fish_type_id`, `weight_unit_id`, `fishing_gear_id`, `weight`, `fishing_area`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 1, 1, 1, 1, 800.00, 'Madura', '2021-01-03 12:36:29', '2021-01-03 12:38:46'),
-(3, 1, 1, 2, 1, 2, 1, 1200.00, 'Samudera Hindia', '2021-01-03 15:37:56', '2021-01-03 15:37:56'),
-(4, 1, 1, 1, 1, 3, 1, 20.00, 'Maluku', '2021-01-03 15:38:19', '2021-01-03 15:46:03');
+INSERT INTO `caught_fish` (`id`, `user_id`, `tpi_id`, `fisher_id`, `fish_type_id`, `weight_unit_id`, `fishing_gear_id`, `fishing_area_id`, `weight`, `trip_day`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 1, 1, 1, 1, 800.00, 12, '2021-01-27 08:07:45', '2021-01-27 08:14:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `district`
+--
+
+CREATE TABLE `district` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -128,9 +139,12 @@ INSERT INTO `caught_fish` (`id`, `tpi_id`, `officer_id`, `fisher_id`, `fish_type
 
 CREATE TABLE `fisher` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` int(11) NOT NULL,
   `nik` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `address` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ship_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abk_total` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -139,9 +153,35 @@ CREATE TABLE `fisher` (
 -- Dumping data for table `fisher`
 --
 
-INSERT INTO `fisher` (`id`, `name`, `nik`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'Fisher 1', '123124124213', 'Bogor', '2021-01-03 12:33:25', '2021-01-03 12:33:25'),
-(2, 'Fisher 2', '123444445555', 'Home', '2021-01-03 16:16:10', '2021-01-03 16:16:10');
+INSERT INTO `fisher` (`id`, `user_id`, `nik`, `name`, `address`, `ship_type`, `abk_total`, `created_at`, `updated_at`) VALUES
+(1, 1, '3214022207990014', 'Buyer 1', 'Candrabaga', '3 motor', '30', '2021-01-23 11:19:41', '2021-01-23 11:48:34');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `fishing_area`
+--
+
+CREATE TABLE `fishing_area` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `district_id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `south_latitude_degree` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `south_latitude_minute` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `south_latitude_second` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `east_longitude_degree` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `east_longitude_minute` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `east_longitude_second` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `fishing_area`
+--
+
+INSERT INTO `fishing_area` (`id`, `district_id`, `name`, `south_latitude_degree`, `south_latitude_minute`, `south_latitude_second`, `east_longitude_degree`, `east_longitude_minute`, `east_longitude_second`, `created_at`, `updated_at`) VALUES
+(1, 1, 'Indramayu', '90', 'aaaaaa', '123123', '12312', '1231', '123', '2021-01-23 18:53:05', '2021-01-23 18:55:28');
 
 -- --------------------------------------------------------
 
@@ -161,41 +201,7 @@ CREATE TABLE `fishing_gear` (
 --
 
 INSERT INTO `fishing_gear` (`id`, `name`, `created_at`, `updated_at`) VALUES
-(1, 'Sodo', '2021-01-03 12:34:26', '2021-01-03 12:34:26'),
-(2, 'Songko', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(3, 'Bubu', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(4, 'Pakaja', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(5, 'Sero Besar', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(6, 'Tugu Ganda', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(7, 'Jernal', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(8, 'Mourami', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(9, 'Jaring Kepiting', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(10, 'Jaring Rajungan', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(11, 'Dogol', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(12, 'Pancing Tonda', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(13, 'Bagan Tancap', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(14, 'Bagan Perahu', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(15, 'Payang Lampu', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(16, 'Payang Rumpon', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(17, 'Soma Dampar', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(18, 'Pukat Tepi', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(19, 'Pukat Harimau', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(20, 'Trawl Dasar', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(21, 'Trawl Udang Ganda', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(22, 'Trawl Udang BED', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(23, 'Jaring Insang Tetap', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(24, 'Jaring Insang Hanyut', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(25, 'Jaring Gondrong', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(26, 'Jaring Insang Lingkar', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(27, 'Pukat Cincin Rumpon', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(28, 'Pukat Cincin Lampu', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(29, 'Soma', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(30, 'Pukat Cincin Cakalang', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(31, 'Pancing Rawai Dasar', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(32, 'Pancing Rawai Tuna', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(33, 'Rumpon Laut Dalam', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(34, 'Huhate', '2021-01-04 00:55:01', '2021-01-04 00:55:01'),
-(35, 'Pukat Cincin', '2021-01-04 00:55:01', '2021-01-04 00:55:01');
+(1, 'Kail', '2021-01-23 12:45:48', '2021-01-23 12:46:27');
 
 -- --------------------------------------------------------
 
@@ -215,42 +221,29 @@ CREATE TABLE `fish_type` (
 --
 
 INSERT INTO `fish_type` (`id`, `name`, `created_at`, `updated_at`) VALUES
-(1, 'Layang', '2021-01-03 12:34:19', '2021-01-03 12:34:19'),
-(2, 'Bawal', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(3, 'Kembung', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(4, 'Selar', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(5, 'Tembang', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(6, 'Udang Barong', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(7, 'Udang Windu', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(8, 'Udang Jrebung', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(9, 'Udang Dogol', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(10, 'Udang Lainnya', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(11, 'Teri', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(12, 'Tongkol', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(13, 'Kurisi', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(14, 'Lemuru', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(15, 'Cakalang', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(16, 'Tenggir', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(17, 'Layur', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(18, 'Ikan Terbang', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(19, 'Julung-Julung', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(20, 'Tiga Waja', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(21, 'Ekor Kuning', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(22, 'Ikan Kowe', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(23, 'Petek/Peperek', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(24, 'Manyung', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(25, 'Songot', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(26, 'Cucut', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(27, 'Pari', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(28, 'Kakap', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(29, 'Sunglir', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(30, 'Bambangan', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(31, 'Kerapu', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(32, 'Kurau', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(33, 'Belanak', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(34, 'Tuna', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(35, 'Cumi-Cumi', '2021-01-03 14:40:30', '2021-01-03 14:40:30'),
-(36, 'Lainnya', '2021-01-03 14:40:30', '2021-01-03 14:40:30');
+(1, 'Tenggiri', '2021-01-27 08:08:56', '2021-01-27 08:08:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `tpi`
+--
+
+CREATE TABLE `tpi` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `district_id` int(11) NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `location` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tpi`
+--
+
+INSERT INTO `tpi` (`id`, `district_id`, `name`, `location`, `created_at`, `updated_at`) VALUES
+(1, 1, 'TPI Indramayu', 'Indramayu', '2021-01-27 08:08:16', '2021-01-27 08:08:16');
 
 -- --------------------------------------------------------
 
@@ -260,12 +253,12 @@ INSERT INTO `fish_type` (`id`, `name`, `created_at`, `updated_at`) VALUES
 
 CREATE TABLE `transaction` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` int(11) NOT NULL,
   `tpi_id` int(11) NOT NULL,
-  `officer_id` int(11) NOT NULL,
   `auction_id` int(11) NOT NULL,
   `buyer_id` int(11) NOT NULL,
-  `price` int(11) NOT NULL,
   `distribution_area` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `price` int(11) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -274,9 +267,32 @@ CREATE TABLE `transaction` (
 -- Dumping data for table `transaction`
 --
 
-INSERT INTO `transaction` (`id`, `tpi_id`, `officer_id`, `auction_id`, `buyer_id`, `price`, `distribution_area`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 1, 1, 12000, 'Malang', '2021-01-03 13:00:12', '2021-01-03 13:00:12'),
-(3, 1, 1, 3, 1, 150000000, 'Malang', '2021-01-03 20:21:17', '2021-01-03 20:21:17');
+INSERT INTO `transaction` (`id`, `user_id`, `tpi_id`, `auction_id`, `buyer_id`, `distribution_area`, `price`, `created_at`, `updated_at`) VALUES
+(1, 1, 1, 1, 1, 'Surabaya', 150000, '2021-01-27 08:43:13', '2021-01-27 08:48:43');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user`
+--
+
+CREATE TABLE `user` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
+(1, 'Petugas 1', 'petugas@mail.com', '2021-01-23 11:21:03', '123456', '123456', '2021-01-23 11:21:03', '2021-01-23 11:21:03');
 
 -- --------------------------------------------------------
 
@@ -296,9 +312,7 @@ CREATE TABLE `weight_unit` (
 --
 
 INSERT INTO `weight_unit` (`id`, `unit`, `created_at`, `updated_at`) VALUES
-(1, 'Ton', '2021-01-03 12:34:34', '2021-01-03 12:34:34'),
-(2, 'Kwintal', '2021-01-03 13:22:24', '2021-01-03 13:22:24'),
-(3, 'Kg', '2021-01-03 13:22:48', '2021-01-03 13:22:48');
+(1, 'Kg', '2021-01-27 08:09:19', '2021-01-27 08:09:19');
 
 --
 -- Indexes for dumped tables
@@ -329,9 +343,21 @@ ALTER TABLE `caught_fish`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `district`
+--
+ALTER TABLE `district`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `fisher`
 --
 ALTER TABLE `fisher`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `fishing_area`
+--
+ALTER TABLE `fishing_area`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -347,10 +373,23 @@ ALTER TABLE `fish_type`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `tpi`
+--
+ALTER TABLE `tpi`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `transaction`
 --
 ALTER TABLE `transaction`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `user`
+--
+ALTER TABLE `user`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `users_email_unique` (`email`);
 
 --
 -- Indexes for table `weight_unit`
@@ -366,7 +405,7 @@ ALTER TABLE `weight_unit`
 -- AUTO_INCREMENT for table `auction`
 --
 ALTER TABLE `auction`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `auction_status`
@@ -378,43 +417,67 @@ ALTER TABLE `auction_status`
 -- AUTO_INCREMENT for table `buyer`
 --
 ALTER TABLE `buyer`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `caught_fish`
 --
 ALTER TABLE `caught_fish`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `district`
+--
+ALTER TABLE `district`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `fisher`
 --
 ALTER TABLE `fisher`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `fishing_area`
+--
+ALTER TABLE `fishing_area`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `fishing_gear`
 --
 ALTER TABLE `fishing_gear`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `fish_type`
 --
 ALTER TABLE `fish_type`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `tpi`
+--
+ALTER TABLE `tpi`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `transaction`
 --
 ALTER TABLE `transaction`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `user`
+--
+ALTER TABLE `user`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `weight_unit`
 --
 ALTER TABLE `weight_unit`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
