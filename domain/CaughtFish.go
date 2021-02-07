@@ -8,21 +8,20 @@ import (
 // Caught fish ..
 type CaughtFish struct {
 	// Database model
-	ID            int64     `json:"id"`
-	UserID        int64     `json:"user_id"`
-	TpiID         int64     `json:"tpi_id"`
-	FisherID      int64     `json:"fisher_id"`
-	FishTypeID    int64     `json:"fish_type_id"`
-	WeightUnitID  int64     `json:"weight_unit_id"`
-	FishingGearID int64     `json:"fishing_gear_id"`
-	FishingAreaID int64     `json:"fishing_area_id"`
-	Weight        float64   `json:"weight"`
-	TripDay       int       `json:"trip_day"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	ID            int64     `json:"id,omitempty"`
+	UserID        int64     `json:"user_id,omitempty"`
+	TpiID         int64     `json:"tpi_id,omitempty"`
+	FisherID      int64     `json:"fisher_id,omitempty"`
+	FishTypeID    int64     `json:"fish_type_id,omitempty"`
+	FishingGearID int64     `json:"fishing_gear_id,omitempty"`
+	FishingAreaID int64     `json:"fishing_area_id,omitempty"`
+	Weight        float64   `json:"weight,omitempty"`
+	WeightUnit    string    `json:"weight_unit,omitempty"`
+	TripDay       int       `json:"trip_day,omitempty"`
+	CreatedAt     time.Time `json:"created_at,omitempty"`
+	UpdatedAt     time.Time `json:"updated_at,omitempty"`
 
 	// Index and get by id attribute
-	WeightUnit  string `json:"weight_unit,omitempty"`
 	FishingGear string `json:"fishing_gear,omitempty"`
 	FisherName  string `json:"fisher_name,omitempty"`
 	FisherNik   string `json:"fisher_nik,omitempty"`
@@ -60,9 +59,9 @@ type StoreCaughtFishRequest struct {
 	FishingGearID  int64 `json:"fishing_gear_id" validate:"required"`
 	FishingAreaID  int64 `json:"fishing_area_id" validate:"required"`
 	CaughtFishData []struct {
-		FishTypeID   int64   `json:"fish_type_id" validate:"required"`
-		Weight       float64 `json:"weight" validate:"required"`
-		WeightUnitID int64   `json:"weight_unit_id" validate:"required"`
+		FishTypeID int64   `json:"fish_type_id" validate:"required"`
+		Weight     float64 `json:"weight" validate:"required"`
+		WeightUnit string  `json:"weight_unit" validate:"required"`
 	} `json:"caught_fish_data" validate:"required"`
 }
 

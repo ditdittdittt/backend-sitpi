@@ -4,11 +4,17 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/ditdittdittt/backend-sitpi/domain/response"
-	"gopkg.in/go-playground/validator.v9"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"gopkg.in/go-playground/validator.v9"
+
+	"github.com/ditdittdittt/backend-sitpi/config"
+	"github.com/ditdittdittt/backend-sitpi/domain/response"
 )
 
 const (
@@ -60,4 +66,51 @@ func ValidateRequest(input interface{}, response *response.Response) error {
 		response.Data = err.Error()
 	}
 	return err
+}
+
+func IsAuthorized(res http.ResponseWriter, req *http.Request, response *response.Response) (err error) {
+	if req.Header["Token"] != nil {
+		token, err := jwt.Parse(req.Header["Token"][0], func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("There was an error")
+			}
+			return config.JwtSecret, nil
+		})
+
+		if err != nil {
+			response.Code = "XX"
+			response.Desc = "Login failed"
+			response.Data = err.Error()
+			return err
+		}
+
+		if !token.Valid {
+			response.Code = "XX"
+			response.Desc = "Token invalid"
+			return errors.New("token invalid")
+		}
+	} else {
+		response.Code = "XX"
+		response.Desc = "Token not sent"
+		return errors.New("token not send")
+	}
+	return nil
+}
+
+func parseJwt(tokenString string) (*jwt.MapClaims, error) {
+	claims := &jwt.MapClaims{}
+
+	tkn, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return config.JwtSecret, nil
+	})
+
+	if err != nil {
+		return claims, err
+	}
+
+	if !tkn.Valid {
+		return claims, errors.New("token invalid")
+	}
+
+	return claims, nil
 }

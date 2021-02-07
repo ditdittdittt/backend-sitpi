@@ -8,14 +8,14 @@ import (
 // Transaction type
 type Transaction struct {
 	ID               int64     `json:"id"`
-	UserID           int64     `json:"user_id"`
-	TpiID            int64     `json:"tpi_id"`
-	AuctionID        int64     `json:"auction_id"`
-	BuyerID          int64     `json:"buyer_id"`
-	DistributionArea string    `json:"distribution_area"`
-	Price            int64     `json:"price"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	UserID           int64     `json:"user_id,omitempty"`
+	TpiID            int64     `json:"tpi_id,omitempty"`
+	AuctionID        int64     `json:"auction_id,omitempty"`
+	BuyerID          int64     `json:"buyer_id,omitempty"`
+	DistributionArea string    `json:"distribution_area,omitempty"`
+	Price            int64     `json:"price,omitempty"`
+	CreatedAt        time.Time `json:"created_at,omitempty"`
+	UpdatedAt        time.Time `json:"updated_at,omitempty"`
 
 	BuyerName  string  `json:"buyer_name,omitempty"`
 	FisherName string  `json:"fisher_name,omitempty"`
@@ -52,10 +52,12 @@ type FetchTransactionRequest struct {
 }
 
 type StoreTransactionRequest struct {
-	AuctionID        int64  `json:"auction_id" validate:"required"`
 	BuyerID          int64  `json:"buyer_id" validate:"required"`
 	DistributionArea string `json:"distribution_area" validate:"required"`
-	Price            int64  `json:"price" validate:"required"`
+	TransactionData  []struct {
+		AuctionID int64 `json:"auction_id" validate:"required"`
+		Price     int64 `json:"price" validate:"required"`
+	} `json:"transaction_data"`
 }
 
 type UpdateTransactionRequest struct {
