@@ -189,14 +189,14 @@ func (m *mysqlAcutionRepository) Delete(ctx context.Context, id int64) (err erro
 }
 
 func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (err error) {
-	query := `UPDATE auction SET status_id=2 WHERE id=?`
+	query := `UPDATE auction SET status_id=2, sold_at=?, WHERE id=?`
 
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, id)
+	res, err := stmt.ExecContext(ctx, id, time.Now())
 	if err != nil {
 		return
 	}
