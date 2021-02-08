@@ -219,7 +219,7 @@ func (m *mysqlAcutionRepository) Inquiry(ctx context.Context, from time.Time, to
 		FROM auction AS a
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
-		WHERE (a.created_at BETWEEN ? AND ?) AND a.status = 1
+		WHERE (a.created_at BETWEEN ? AND ?) AND a.status_id = 1
 		ORDER BY a.created_at`
 
 	res, err = m.inquiry(ctx, query, from, to)
