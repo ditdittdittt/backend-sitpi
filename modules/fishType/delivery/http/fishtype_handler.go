@@ -37,11 +37,11 @@ func NewFishTypeHandler(router *mux.Router, uc domain.FishTypeUsecase) {
 func (h *FishTypeHandler) Fetch(res http.ResponseWriter, req *http.Request) {
 	response := _response.New()
 
-	err := helper.IsAuthorized(res, req, response)
-	if err != nil {
-		helper.SetResponse(res, req, response)
-		return
-	}
+	//err := helper.IsAuthorized(res, req, response)
+	//if err != nil {
+	//	helper.SetResponse(res, req, response)
+	//	return
+	//}
 
 	ctx := req.Context()
 	listFishType, err := h.FTUsecase.Fetch(ctx)
