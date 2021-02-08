@@ -215,9 +215,8 @@ func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (er
 }
 
 func (m *mysqlAcutionRepository) Inquiry(ctx context.Context, from time.Time, to time.Time) (res []domain.Auction, err error) {
-	query := `SELECT a.id, a.weight, wu.unit, a.created_at, a.updated_at, ft.name
+	query := `SELECT a.id, cf.weight, cf.weight_unit, a.created_at, a.updated_at, ft.name
 		FROM auction AS a
-		INNER JOIN weight_unit AS wu ON a.weight_unit_id=wu.id
 		INNER JOIN caught_fish AS cf ON a.caught_fish_id=cf.id
 		INNER JOIN fish_type AS ft ON cf.fish_type_id=ft.id
 		WHERE (a.created_at BETWEEN ? AND ?) AND a.status = 1
