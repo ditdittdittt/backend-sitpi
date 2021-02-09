@@ -143,13 +143,13 @@ func (m *mysqlAcutionRepository) GetByID(ctx context.Context, id int64) (res dom
 }
 
 func (m *mysqlAcutionRepository) Store(ctx context.Context, a *domain.Auction) (err error) {
-	query := `INSERT auction SET tpi_id=?, caught_fish_id=?, status_id=?, created_at=?, updated_at=?`
+	query := `INSERT auction SET tpi_id=?, caught_fish_id=?, status_id=?, sold_at=?, created_at=?, updated_at=?`
 	stmt, err := m.Conn.PrepareContext(ctx, query)
 	if err != nil {
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, a.TpiID, a.CaughtFishID, a.StatusID, a.CreatedAt, a.UpdatedAt)
+	res, err := stmt.ExecContext(ctx, a.TpiID, a.CaughtFishID, a.StatusID, time.Time{}, a.CreatedAt, a.UpdatedAt)
 	if err != nil {
 		return
 	}
