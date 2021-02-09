@@ -196,7 +196,7 @@ func (m *mysqlAcutionRepository) UpdateStatus(ctx context.Context, id int64) (er
 		return
 	}
 
-	res, err := stmt.ExecContext(ctx, id, time.Now())
+	res, err := stmt.ExecContext(ctx, time.Now(), id)
 	if err != nil {
 		return
 	}
